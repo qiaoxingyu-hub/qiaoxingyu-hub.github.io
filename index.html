@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>蜜豆AI</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    #chat { height: 300px; overflow-y: scroll; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; }
+    input, button { padding: 10px; }
+    button { background: #0066ff; color: white; border: none; }
+  </style>
+</head>
+<body>
+  <h2>🌸 蜜豆AI助手</h2>
+  <div id="chat"></div>
+  <input type="text" id="userInput" placeholder="说点什么..." />
+  <button onclick="send()">发送</button>
+
+  <script>
+    function send() {
+      const input = document.getElementById("userInput");
+      const value = input.value.trim();
+      if (!value) return;
+
+      const chat = document.getElementById("chat");
+      chat.innerHTML += `<div style="margin:5px; background:#e3f2fd; padding:8px; max-width:80%; margin-left:auto;">${value}</div>`;
+      chat.innerHTML += `<div style="margin:5px; background:#f0f0f0; padding:8px;">收到："${value}"（功能待接入）</div>`;
+      input.value = "";
+      chat.scrollTop = chat.scrollHeight;
+    }
+  </script>
+</body>
+</html>
