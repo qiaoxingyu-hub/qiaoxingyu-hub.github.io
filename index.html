@@ -11,307 +11,312 @@
       box-sizing: border-box;
     }
 
+    :root {
+      --primary: #5E81F4;
+      --primary-light: #8EA7F9;
+      --primary-dark: #3D63D4;
+      --secondary: #FF7AC6;
+      --bg-light: #F5F7FF;
+      --bg-white: #FFFFFF;
+      --text-dark: #2E384D;
+      --text-light: #8C94A7;
+      --shadow: 0 10px 30px rgba(94, 129, 244, 0.15);
+      --radius: 16px;
+    }
+
     body {
-      font-family: 'Comic Sans MS', '楷体', sans-serif;
-      background: linear-gradient(135deg, #ffafbd, #ffc3a0);
+      font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #F5F7FF 0%, #E6EBFF 100%);
       min-height: 100vh;
       padding: 20px;
+      color: var(--text-dark);
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .container {
+      width: 100%;
       max-width: 800px;
-      margin: 0 auto;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 20px;
-      padding: 30px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      border: 3px solid #ff9ebb;
+      background: var(--bg-white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 90vh;
     }
 
     .header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 20px 30px;
       text-align: center;
-      margin-bottom: 30px;
+      position: relative;
     }
 
     .header h1 {
-      color: #ff6b93;
-      font-size: 2.5em;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-      margin-bottom: 10px;
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 5px;
     }
 
     .header p {
-      color: #ff8fab;
-      font-size: 1.2em;
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    .status-indicator {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4CD964;
+      margin-right: 8px;
     }
 
     /* 聊天区域样式 */
     .chat-container {
-      background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
-      border-radius: 15px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
       padding: 20px;
-      margin-bottom: 30px;
-      border: 2px solid #89b4fa;
+      overflow: hidden;
     }
 
     #chat {
-      height: 300px;
+      flex: 1;
       overflow-y: auto;
-      padding: 15px;
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 10px;
-      margin-bottom: 15px;
-      border: 2px dashed #ff9ebb;
-    }
-
-    .user-msg {
-      background: linear-gradient(135deg, #ffafbd, #ffc3a0);
-      color: white;
-      padding: 12px 18px;
-      border-radius: 20px 20px 5px 20px;
-      margin: 10px 0;
-      max-width: 80%;
-      margin-left: auto;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      animation: bounceIn 0.5s ease;
-    }
-
-    .ai-msg {
-      background: linear-gradient(135deg, #89b4fa, #a1c4fd);
-      color: white;
-      padding: 12px 18px;
-      border-radius: 20px 20px 20px 5px;
-      margin: 10px 0;
-      max-width: 80%;
-      margin-right: auto;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      animation: bounceIn 0.5s ease;
-    }
-
-    .input-area {
+      padding: 10px;
+      margin-bottom: 20px;
       display: flex;
-      gap: 10px;
+      flex-direction: column;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 12px 18px;
+      margin-bottom: 15px;
+      border-radius: 18px;
+      line-height: 1.4;
+      position: relative;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .user-message {
+      align-self: flex-end;
+      background: var(--primary);
+      color: white;
+      border-bottom-right-radius: 6px;
+    }
+
+    .ai-message {
+      align-self: flex-start;
+      background: var(--bg-light);
+      color: var(--text-dark);
+      border-bottom-left-radius: 6px;
+    }
+
+    .message-time {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      margin-top: 5px;
+      text-align: right;
+    }
+
+    .ai-message .message-time {
+      text-align: left;
+    }
+
+    /* 输入区域 */
+    .input-container {
+      display: flex;
+      background: var(--bg-light);
+      border-radius: 24px;
+      padding: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
     #userInput {
       flex: 1;
-      padding: 12px 15px;
-      border: 2px solid #ff9ebb;
-      border-radius: 25px;
-      font-size: 16px;
+      border: none;
+      background: transparent;
+      padding: 12px 20px;
+      font-size: 1rem;
       outline: none;
-      background: rgba(255, 255, 255, 0.9);
+      color: var(--text-dark);
     }
 
-    #userInput:focus {
-      border-color: #ff6b93;
-      box-shadow: 0 0 10px rgba(255, 107, 147, 0.3);
+    #userInput::placeholder {
+      color: var(--text-light);
     }
 
-    button {
-      background: linear-gradient(135deg, #ff6b93, #ff8fab);
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      background: var(--primary);
       color: white;
       border: none;
-      padding: 12px 25px;
-      border-radius: 25px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       cursor: pointer;
-      font-size: 16px;
-      font-weight: bold;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 8px rgba(94, 129, 244, 0.3);
     }
 
-    button:hover {
+    .btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 6px 12px rgba(94, 129, 244, 0.4);
     }
 
-    /* 照片上传区域 */
-    .photo-section {
-      background: linear-gradient(135deg, #d4fc79, #96e6a1);
-      border-radius: 15px;
-      padding: 20px;
-      border: 2px solid #96e6a1;
+    .btn:active {
+      transform: translateY(0);
     }
 
-    .photo-section h3 {
-      color: #2d6a4f;
+    .btn-voice {
+      background: var(--secondary);
+      box-shadow: 0 4px 8px rgba(255, 122, 198, 0.3);
+    }
+
+    .btn-voice.listening {
+      animation: pulse 1.5s infinite;
+    }
+
+    .btn-speak {
+      background: var(--primary-light);
+    }
+
+    .btn:disabled {
+      background: var(--text-light);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .voice-status {
       text-align: center;
-      margin-bottom: 20px;
-      font-size: 1.5em;
-    }
-
-    .photo-upload-area {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-
-    .photo-slot {
-      background: rgba(255, 255, 255, 0.9);
-      border: 3px dashed #96e6a1;
-      border-radius: 15px;
-      height: 150px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-
-    .photo-slot:hover {
-      transform: scale(1.05);
-      border-color: #40916c;
-    }
-
-    .photo-slot img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: none;
-    }
-
-    .upload-icon {
-      font-size: 2em;
-      color: #96e6a1;
-    }
-
-    .photo-slot input {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      cursor: pointer;
-    }
-
-    /* 裁剪模态框 */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal-content {
-      background: white;
-      padding: 20px;
-      border-radius: 15px;
-      max-width: 500px;
-      width: 90%;
-      text-align: center;
-    }
-
-    #cropArea {
-      width: 100%;
-      height: 300px;
-      background: #f0f0f0;
-      margin: 15px 0;
-      border: 2px dashed #ccc;
-    }
-
-    .modal-buttons {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
+      margin: 10px 0;
+      color: var(--primary);
+      font-size: 0.9rem;
+      min-height: 20px;
     }
 
     /* 动画 */
-    @keyframes bounceIn {
-      0% { transform: scale(0.3); opacity: 0; }
-      50% { transform: scale(1.05); opacity: 0.8; }
-      100% { transform: scale(1); opacity: 1; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .bubble {
-      animation: bubble 2s infinite;
-    }
-
-    @keyframes bubble {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 122, 198, 0.7); }
+      70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 122, 198, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 122, 198, 0); }
     }
 
     /* 响应式设计 */
     @media (max-width: 600px) {
       .container {
-        padding: 15px;
+        height: 95vh;
+      }
+      
+      .header {
+        padding: 15px 20px;
       }
       
       .header h1 {
-        font-size: 2em;
+        font-size: 1.5rem;
       }
       
-      #chat {
-        height: 250px;
+      .chat-container {
+        padding: 15px;
       }
       
-      .photo-upload-area {
-        grid-template-columns: 1fr;
+      .message {
+        max-width: 90%;
       }
+    }
+
+    /* 滚动条样式 */
+    #chat::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #chat::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+
+    #chat::-webkit-scrollbar-thumb {
+      background: var(--primary-light);
+      border-radius: 10px;
+    }
+
+    #chat::-webkit-scrollbar-thumb:hover {
+      background: var(--primary);
     }
   </style>
 </head>
 <body>
-  <div class="container bubble">
+  <div class="container">
     <!-- 头部 -->
     <div class="header">
-      <h1>✨ 米小兜AI助手 ✨</h1>
-      <p>和小米兜一起聊天、分享快乐吧！</p>
+      <h1>米小兜AI助手</h1>
+      <p>您的智能对话伙伴</p>
+      <div class="status-indicator">
+        <div class="status-dot"></div>
+        <span>在线</span>
+      </div>
     </div>
 
     <!-- 聊天区域 -->
     <div class="chat-container">
       <div id="chat">
-        <div class="ai-msg">
-          🌸 你好呀！我是小米兜，很高兴认识你！你想和我聊什么呢？
+        <div class="message ai-message">
+          嗨！我是米小兜，您的AI助手。有什么我可以帮您的吗？
+          <div class="message-time">刚刚</div>
         </div>
       </div>
-      <div class="input-area">
-        <input type="text" id="userInput" placeholder="输入你想说的话...">
-        <button onclick="sendMessage()">发送</button>
-      </div>
-    </div>
-
-    <!-- 照片上传区域 -->
-    <div class="photo-section">
-      <h3>📸 我的照片墙</h3>
-      <div class="photo-upload-area">
-        <div class="photo-slot" onclick="openUpload(0)">
-          <div class="upload-icon">+</div>
-          <img id="preview0" src="" alt="照片1">
-          <input type="file" id="file0" accept="image/*" onchange="handleImageSelect(event, 0)">
+      
+      <div class="voice-status" id="voiceStatus"></div>
+      
+      <div class="input-container">
+        <input type="text" id="userInput" placeholder="输入您的问题...">
+        <div class="action-buttons">
+          <button class="btn btn-voice" id="voiceButton" onclick="toggleVoiceRecognition()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+              <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+            </svg>
+          </button>
+          <button class="btn" onclick="sendMessage()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+          </button>
+          <button class="btn btn-speak" onclick="speakLastMessage()" id="speakButton" disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+            </svg>
+          </button>
         </div>
-        <div class="photo-slot" onclick="openUpload(1)">
-          <div class="upload-icon">+</div>
-          <img id="preview1" src="" alt="照片2">
-          <input type="file" id="file1" accept="image/*" onchange="handleImageSelect(event, 1)">
-        </div>
-        <div class="photo-slot" onclick="openUpload(2)">
-          <div class="upload-icon">+</div>
-          <img id="preview2" src="" alt="照片3">
-          <input type="file" id="file2" accept="image/*" onchange="handleImageSelect(event, 2)">
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 图片裁剪模态框 -->
-  <div class="modal" id="cropModal">
-    <div class="modal-content">
-      <h3>✂️ 裁剪照片</h3>
-      <div id="cropArea"></div>
-      <div class="modal-buttons">
-        <button onclick="cropImage()" style="background: linear-gradient(135deg, #4CAF50, #45a049);">确认裁剪</button>
-        <button onclick="closeCropModal()" style="background: linear-gradient(135deg, #ff6b6b, #ff8e8e);">取消</button>
       </div>
     </div>
   </div>
@@ -324,11 +329,141 @@
 
     // 用于保存对话历史，让AI有上下文记忆
     let conversationHistory = [
-      { role: "system", content: "你是一个名叫米小兜的AI助手，回答风格亲切友善，乐于助人，专门为儿童提供有趣且安全的对话。" }
+      { 
+        role: "system", 
+        content: "你是一个名叫米小兜的AI助手，回答风格亲切友善、专业且简洁。你专注于帮助用户解决问题，提供有用的信息和建议。" 
+      }
     ];
 
-    let currentEditingSlot = null;
-    let currentImage = null;
+    // 语音识别相关变量
+    let recognition = null;
+    let isListening = false;
+    let lastAIResponse = "";
+    
+    // 获取当前时间
+    function getCurrentTime() {
+      const now = new Date();
+      return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    }
+    
+    // 检查浏览器是否支持语音识别
+    function initializeSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      
+      if (!SpeechRecognition) {
+        document.getElementById('voiceStatus').textContent = "您的浏览器不支持语音识别功能，请使用Chrome或Edge浏览器";
+        document.getElementById('voiceButton').disabled = true;
+        return false;
+      }
+      
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'zh-CN';
+      
+      recognition.onstart = function() {
+        isListening = true;
+        document.getElementById('voiceButton').classList.add('listening');
+        document.getElementById('voiceStatus').textContent = "正在聆听...请说话";
+      };
+      
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('userInput').value = transcript;
+        document.getElementById('voiceStatus').textContent = `识别结果: ${transcript}`;
+        
+        // 自动发送识别到的语音内容
+        setTimeout(() => {
+          sendMessage();
+        }, 500);
+      };
+      
+      recognition.onerror = function(event) {
+        console.error('语音识别错误:', event.error);
+        document.getElementById('voiceStatus').textContent = `识别错误: ${event.error}`;
+        stopVoiceRecognition();
+      };
+      
+      recognition.onend = function() {
+        stopVoiceRecognition();
+      };
+      
+      return true;
+    }
+    
+    // 开始或停止语音识别
+    function toggleVoiceRecognition() {
+      if (!recognition) {
+        if (!initializeSpeechRecognition()) {
+          return;
+        }
+      }
+      
+      if (isListening) {
+        stopVoiceRecognition();
+      } else {
+        startVoiceRecognition();
+      }
+    }
+    
+    // 开始语音识别
+    function startVoiceRecognition() {
+      try {
+        recognition.start();
+      } catch (error) {
+        console.error('启动语音识别失败:', error);
+        document.getElementById('voiceStatus').textContent = "启动语音识别失败，请重试";
+      }
+    }
+    
+    // 停止语音识别
+    function stopVoiceRecognition() {
+      if (recognition && isListening) {
+        recognition.stop();
+      }
+      isListening = false;
+      document.getElementById('voiceButton').classList.remove('listening');
+    }
+    
+    // 语音合成 - 朗读AI的回复
+    function speakText(text) {
+      // 检查浏览器是否支持语音合成
+      if (!('speechSynthesis' in window)) {
+        alert("您的浏览器不支持语音合成功能");
+        return;
+      }
+      
+      // 停止任何正在进行的语音
+      window.speechSynthesis.cancel();
+      
+      // 创建语音实例
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'zh-CN';
+      utterance.rate = 1.0; // 正常语速
+      utterance.pitch = 1.0; // 正常音调
+      
+      utterance.onstart = function() {
+        document.getElementById('voiceStatus').textContent = "正在朗读回复...";
+        document.getElementById('speakButton').disabled = true;
+      };
+      
+      utterance.onend = function() {
+        document.getElementById('voiceStatus').textContent = "";
+        document.getElementById('speakButton').disabled = false;
+      };
+      
+      // 开始朗读
+      window.speechSynthesis.speak(utterance);
+    }
+    
+    // 朗读最后一条AI消息
+    function speakLastMessage() {
+      if (lastAIResponse) {
+        speakText(lastAIResponse);
+      } else {
+        document.getElementById('voiceStatus').textContent = "没有可朗读的回复";
+      }
+    }
 
     // 发送消息函数 - 接入千问API
     async function sendMessage() {
@@ -338,14 +473,25 @@
       if (!message) return;
 
       const chatBox = document.getElementById('chat');
+      const currentTime = getCurrentTime();
       
       // 在界面上显示用户输入
-      chatBox.innerHTML += `<div class="user-msg">${message}</div>`;
+      chatBox.innerHTML += `
+        <div class="message user-message">
+          ${message}
+          <div class="message-time">${currentTime}</div>
+        </div>
+      `;
       userInput.value = '';
       
       // 显示"思考中"的提示
       const thinkingId = "thinking-" + Date.now();
-      chatBox.innerHTML += `<div class="ai-msg" id="${thinkingId}">🌸 米兜AI正在思考...</div>`;
+      chatBox.innerHTML += `
+        <div class="message ai-message" id="${thinkingId}">
+          米小兜正在思考...
+          <div class="message-time">${currentTime}</div>
+        </div>
+      `;
       chatBox.scrollTop = chatBox.scrollHeight;
 
       try {
@@ -374,17 +520,31 @@
         
         // 从API回复中提取AI的回答文本
         const aiReply = data.choices[0].message.content;
+        lastAIResponse = aiReply; // 保存最后一条AI回复用于语音朗读
         
         // 将AI的回答也加入历史
         conversationHistory.push({ role: "assistant", content: aiReply });
 
         // 用AI的真实回复替换"思考中"提示
-        document.getElementById(thinkingId).outerHTML = `<div class="ai-msg">${aiReply}</div>`;
+        document.getElementById(thinkingId).outerHTML = `
+          <div class="message ai-message">
+            ${aiReply}
+            <div class="message-time">${getCurrentTime()}</div>
+          </div>
+        `;
+        
+        // 启用朗读按钮
+        document.getElementById('speakButton').disabled = false;
         
       } catch (error) {
         console.error('出错了:', error);
         // 用错误信息替换"思考中"提示
-        document.getElementById(thinkingId).outerHTML = `<div class="ai-msg">抱歉，我暂时无法回应。错误详情: ${error.message}</div>`;
+        document.getElementById(thinkingId).outerHTML = `
+          <div class="message ai-message">
+            抱歉，我暂时无法回应。错误详情: ${error.message}
+            <div class="message-time">${getCurrentTime()}</div>
+          </div>
+        `;
       }
       
       // 确保聊天框滚动到底部
@@ -398,58 +558,20 @@
       }
     });
 
-    // 打开上传对话框
-    function openUpload(slotIndex) {
-      document.getElementById(`file${slotIndex}`).click();
-    }
-
-    // 处理图片选择
-    function handleImageSelect(event, slotIndex) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      currentEditingSlot = slotIndex;
-      
-      // 简单预览（实际项目中可以实现真实裁剪）
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const preview = document.getElementById(`preview${slotIndex}`);
-        preview.src = e.target.result;
-        preview.style.display = 'block';
-        preview.parentElement.querySelector('.upload-icon').style.display = 'none';
-        
-        // 在实际项目中，这里可以打开裁剪模态框
-        // openCropModal(e.target.result);
-      };
-      reader.readAsDataURL(file);
-    }
-
-    // 打开裁剪模态框（功能框架）
-    function openCropModal(imageData) {
-      currentImage = imageData;
-      document.getElementById('cropModal').style.display = 'flex';
-      // 这里可以集成真实的裁剪库如Cropper.js
-    }
-
-    // 关闭裁剪模态框
-    function closeCropModal() {
-      document.getElementById('cropModal').style.display = 'none';
-    }
-
-    // 裁剪图片（功能框架）
-    function cropImage() {
-      // 在实际项目中，这里会处理真实的裁剪逻辑
-      alert('照片裁剪完成！在实际版本中这里会显示裁剪后的效果');
-      closeCropModal();
-    }
-
-    // 初始化一些欢迎消息
+    // 初始化语音识别
     window.onload = function() {
+      initializeSpeechRecognition();
+      
       const chat = document.getElementById('chat');
       setTimeout(() => {
-        chat.innerHTML += `<div class="ai-msg">🎉 你可以上传喜欢的照片到照片墙，还可以和我聊天哦！</div>`;
-        chat.scrollTop = chat.scrollHeight;
-      }, 2000);
+        chat.innerHTML += `
+          <div class="message ai-message">
+            您可以使用文字或语音与我交流，点击麦克风按钮开始语音对话。
+            <div class="message-time">${getCurrentTime()}</div>
+          </div>
+        `;
+        chat.scrollTop = chatBox.scrollHeight;
+      }, 1000);
     };
   </script>
 </body>
