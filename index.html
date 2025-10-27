@@ -1,33 +1,415 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>蜜豆AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>蜜豆AI儿童乐园</title>
   <style>
-    body { font-family: Arial; padding: 20px; }
-    #chat { height: 300px; overflow-y: scroll; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; }
-    input, button { padding: 10px; }
-    button { background: #0066ff; color: white; border: none; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Comic Sans MS', '楷体', sans-serif;
+      background: linear-gradient(135deg, #ffafbd, #ffc3a0);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      border: 3px solid #ff9ebb;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      color: #ff6b93;
+      font-size: 2.5em;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #ff8fab;
+      font-size: 1.2em;
+    }
+
+    /* 聊天区域样式 */
+    .chat-container {
+      background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 30px;
+      border: 2px solid #89b4fa;
+    }
+
+    #chat {
+      height: 300px;
+      overflow-y: auto;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 10px;
+      margin-bottom: 15px;
+      border: 2px dashed #ff9ebb;
+    }
+
+    .user-msg {
+      background: linear-gradient(135deg, #ffafbd, #ffc3a0);
+      color: white;
+      padding: 12px 18px;
+      border-radius: 20px 20px 5px 20px;
+      margin: 10px 0;
+      max-width: 80%;
+      margin-left: auto;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      animation: bounceIn 0.5s ease;
+    }
+
+    .ai-msg {
+      background: linear-gradient(135deg, #89b4fa, #a1c4fd);
+      color: white;
+      padding: 12px 18px;
+      border-radius: 20px 20px 20px 5px;
+      margin: 10px 0;
+      max-width: 80%;
+      margin-right: auto;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      animation: bounceIn 0.5s ease;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 10px;
+    }
+
+    #userInput {
+      flex: 1;
+      padding: 12px 15px;
+      border: 2px solid #ff9ebb;
+      border-radius: 25px;
+      font-size: 16px;
+      outline: none;
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    #userInput:focus {
+      border-color: #ff6b93;
+      box-shadow: 0 0 10px rgba(255, 107, 147, 0.3);
+    }
+
+    button {
+      background: linear-gradient(135deg, #ff6b93, #ff8fab);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    /* 照片上传区域 */
+    .photo-section {
+      background: linear-gradient(135deg, #d4fc79, #96e6a1);
+      border-radius: 15px;
+      padding: 20px;
+      border: 2px solid #96e6a1;
+    }
+
+    .photo-section h3 {
+      color: #2d6a4f;
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.5em;
+    }
+
+    .photo-upload-area {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .photo-slot {
+      background: rgba(255, 255, 255, 0.9);
+      border: 3px dashed #96e6a1;
+      border-radius: 15px;
+      height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .photo-slot:hover {
+      transform: scale(1.05);
+      border-color: #40916c;
+    }
+
+    .photo-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    .upload-icon {
+      font-size: 2em;
+      color: #96e6a1;
+    }
+
+    .photo-slot input {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    /* 裁剪模态框 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+    }
+
+    #cropArea {
+      width: 100%;
+      height: 300px;
+      background: #f0f0f0;
+      margin: 15px 0;
+      border: 2px dashed #ccc;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    /* 动画 */
+    @keyframes bounceIn {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .bubble {
+      animation: bubble 2s infinite;
+    }
+
+    @keyframes bubble {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 600px) {
+      .container {
+        padding: 15px;
+      }
+      
+      .header h1 {
+        font-size: 2em;
+      }
+      
+      #chat {
+        height: 250px;
+      }
+      
+      .photo-upload-area {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
-  <h2>🌸 蜜豆AI助手</h2>
-  <div id="chat"></div>
-  <input type="text" id="userInput" placeholder="说点什么..." />
-  <button onclick="send()">发送</button>
+  <div class="container bubble">
+    <!-- 头部 -->
+    <div class="header">
+      <h1>✨ 米兜AI儿童乐园 ✨</h1>
+      <p>和小米兜一起聊天、分享快乐吧！</p>
+    </div>
+
+    <!-- 聊天区域 -->
+    <div class="chat-container">
+      <div id="chat">
+        <div class="ai-msg">
+          🌸 你好呀！我是小米兜，很高兴认识你！你想和我聊什么呢？
+        </div>
+      </div>
+      <div class="input-area">
+        <input type="text" id="userInput" placeholder="输入你想说的话...">
+        <button onclick="sendMessage()">发送</button>
+      </div>
+    </div>
+
+    <!-- 照片上传区域 -->
+    <div class="photo-section">
+      <h3>📸 我的照片墙</h3>
+      <div class="photo-upload-area">
+        <div class="photo-slot" onclick="openUpload(0)">
+          <div class="upload-icon">+</div>
+          <img id="preview0" src="" alt="照片1">
+          <input type="file" id="file0" accept="image/*" onchange="handleImageSelect(event, 0)">
+        </div>
+        <div class="photo-slot" onclick="openUpload(1)">
+          <div class="upload-icon">+</div>
+          <img id="preview1" src="" alt="照片2">
+          <input type="file" id="file1" accept="image/*" onchange="handleImageSelect(event, 1)">
+        </div>
+        <div class="photo-slot" onclick="openUpload(2)">
+          <div class="upload-icon">+</div>
+          <img id="preview2" src="" alt="照片3">
+          <input type="file" id="file2" accept="image/*" onchange="handleImageSelect(event, 2)">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 图片裁剪模态框 -->
+  <div class="modal" id="cropModal">
+    <div class="modal-content">
+      <h3>✂️ 裁剪照片</h3>
+      <div id="cropArea"></div>
+      <div class="modal-buttons">
+        <button onclick="cropImage()" style="background: linear-gradient(135deg, #4CAF50, #45a049);">确认裁剪</button>
+        <button onclick="closeCropModal()" style="background: linear-gradient(135deg, #ff6b6b, #ff8e8e);">取消</button>
+      </div>
+    </div>
+  </div>
 
   <script>
-    function send() {
-      const input = document.getElementById("userInput");
-      const value = input.value.trim();
-      if (!value) return;
+    let currentEditingSlot = null;
+    let currentImage = null;
 
-      const chat = document.getElementById("chat");
-      chat.innerHTML += `<div style="margin:5px; background:#e3f2fd; padding:8px; max-width:80%; margin-left:auto;">${value}</div>`;
-      chat.innerHTML += `<div style="margin:5px; background:#f0f0f0; padding:8px;">收到："${value}"（功能待接入）</div>`;
-      input.value = "";
+    // 发送消息函数
+    function sendMessage() {
+      const input = document.getElementById('userInput');
+      const message = input.value.trim();
+      
+      if (!message) return;
+
+      const chat = document.getElementById('chat');
+      
+      // 添加用户消息
+      chat.innerHTML += `<div class="user-msg">${message}</div>`;
+      
+      // 模拟AI回复（后续可替换为真实AI）
+      setTimeout(() => {
+        const replies = [
+          "🌸 真有趣！能多告诉我一些吗？",
+          "🎨 我喜欢这个话题！我们继续聊吧～",
+          "💫 哇，好有意思的想法！",
+          "🌈 让我想想怎么回答你最好呢...",
+          "🎯 我明白了！还有其他想聊的吗？"
+        ];
+        const randomReply = replies[Math.floor(Math.random() * replies.length)];
+        chat.innerHTML += `<div class="ai-msg">${randomReply}</div>`;
+        chat.scrollTop = chat.scrollHeight;
+      }, 1000);
+
+      input.value = '';
       chat.scrollTop = chat.scrollHeight;
     }
+
+    // 按回车发送消息
+    document.getElementById('userInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+
+    // 打开上传对话框
+    function openUpload(slotIndex) {
+      document.getElementById(`file${slotIndex}`).click();
+    }
+
+    // 处理图片选择
+    function handleImageSelect(event, slotIndex) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      currentEditingSlot = slotIndex;
+      
+      // 简单预览（实际项目中可以实现真实裁剪）
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const preview = document.getElementById(`preview${slotIndex}`);
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        preview.parentElement.querySelector('.upload-icon').style.display = 'none';
+        
+        // 在实际项目中，这里可以打开裁剪模态框
+        // openCropModal(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 打开裁剪模态框（功能框架）
+    function openCropModal(imageData) {
+      currentImage = imageData;
+      document.getElementById('cropModal').style.display = 'flex';
+      // 这里可以集成真实的裁剪库如Cropper.js
+    }
+
+    // 关闭裁剪模态框
+    function closeCropModal() {
+      document.getElementById('cropModal').style.display = 'none';
+    }
+
+    // 裁剪图片（功能框架）
+    function cropImage() {
+      // 在实际项目中，这里会处理真实的裁剪逻辑
+      alert('照片裁剪完成！在实际版本中这里会显示裁剪后的效果');
+      closeCropModal();
+    }
+
+    // 初始化一些欢迎消息
+    window.onload = function() {
+      const chat = document.getElementById('chat');
+      setTimeout(() => {
+        chat.innerHTML += `<div class="ai-msg">🎉 你可以上传喜欢的照片到照片墙，还可以和我聊天哦！</div>`;
+        chat.scrollTop = chat.scrollHeight;
+      }, 2000);
+    };
   </script>
 </body>
 </html>
