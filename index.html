@@ -86,6 +86,35 @@
       margin-right: 8px;
     }
 
+    /* 应用按钮样式 */
+    .app-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background: var(--primary);
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 16px;
+      line-height: 1.2;
+      box-shadow: 0 2px 6px rgba(94, 129, 244, 0.35);
+      transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+      margin-top: 10px;
+      border: none;
+      cursor: pointer;
+    }
+    
+    .app-btn:hover {
+      transform: translateY(-1px);
+      background: var(--primary-dark);
+      box-shadow: 0 6px 16px rgba(94, 129, 244, 0.35);
+      color: white;
+    }
+    
+    .app-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(94, 129, 244, 0.35);
+    }
+
     /* 聊天区域样式 */
     .chat-container {
       flex: 1;
@@ -219,6 +248,38 @@
       min-height: 20px;
     }
 
+    /* 微信提示 */
+    .wechat-tip {
+      background: #FFF6E0;
+      border: 1px solid #FFD351;
+      border-radius: 8px;
+      padding: 10px 15px;
+      margin-bottom: 15px;
+      font-size: 0.85rem;
+      color: #8C6C0F;
+      display: none;
+    }
+
+    /* 语音功能提示 */
+    .voice-help {
+      background: #E8F4FD;
+      border: 1px solid #B8D9F0;
+      border-radius: 8px;
+      padding: 12px 15px;
+      margin-bottom: 15px;
+      font-size: 0.85rem;
+      color: #2C5B8A;
+    }
+
+    .voice-help ul {
+      margin: 8px 0;
+      padding-left: 20px;
+    }
+
+    .voice-help li {
+      margin-bottom: 5px;
+    }
+
     /* 动画 */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
@@ -280,6 +341,10 @@
     <div class="header">
       <h1>米小兜AI助手</h1>
       <p>您的智能对话伙伴</p>
+      <!-- 添加应用跳转按钮 -->
+      <a href="edu/index.html" class="app-btn">
+        📚 打开学习应用
+      </a>
       <div class="status-indicator">
         <div class="status-dot"></div>
         <span>在线</span>
@@ -288,6 +353,20 @@
 
     <!-- 聊天区域 -->
     <div class="chat-container">
+      <div class="wechat-tip" id="wechatTip">
+        提示：在微信中首次使用语音功能，需要点击"允许"使用麦克风权限。
+      </div>
+      
+      <div class="voice-help" id="voiceHelp">
+        <strong>语音功能使用提示：</strong>
+        <ul>
+          <li>语音功能在Chrome、Edge等浏览器中效果最佳</li>
+          <li>首次使用需要授权麦克风权限</li>
+          <li>确保麦克风设备正常工作</li>
+          <li>在安静环境中使用效果更好</li>
+        </ul>
+      </div>
+      
       <div id="chat">
         <div class="message ai-message">
           嗨！我是米小兜，您的AI助手。有什么我可以帮您的吗？
@@ -325,7 +404,7 @@
     // 🔑 配置你的API信息 - 请替换成你自己的！
     const API_KEY = 'sk-cf810705e966476eb6aabf5651e42163'; // 请在此处填入你从阿里云百炼获取的API密钥
     const API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'; // 千问的OpenAI兼容接口地址
-    const MODEL_NAME = 'qwen-plus'; // 你打算使用的模型名称，例如 qwen-max, qwen-turbo 等
+    const MODEL_NAME = 'qwen-max'; // 你打算使用的模型名称，例如 qwen-max, qwen-turbo 等
 
     // 用于保存对话历史，让AI有上下文记忆
     let conversationHistory = [
@@ -339,6 +418,13 @@
     let recognition = null;
     let isListening = false;
     let lastAIResponse = "";
+    let isWeChat = false; // 标记是否在微信环境中
+    
+    // 检测是否在微信中打开
+    function detectWeChat() {
+      const ua = navigator.userAgent.toLowerCase();
+      return ua.indexOf('micromessenger') !== -1;
+    }
     
     // 获取当前时间
     function getCurrentTime() {
@@ -353,6 +439,15 @@
       if (!SpeechRecognition) {
         document.getElementById('voiceStatus').textContent = "您的浏览器不支持语音识别功能，请使用Chrome或Edge浏览器";
         document.getElementById('voiceButton').disabled = true;
+        document.getElementById('voiceHelp').innerHTML = `
+          <strong>语音功能不可用</strong>
+          <p>您的浏览器不支持语音识别功能，请尝试以下解决方案：</p>
+          <ul>
+            <li>使用Chrome、Edge或Safari浏览器</li>
+            <li>确保浏览器版本较新</li>
+            <li>或直接使用文字输入与AI交流</li>
+          </ul>
+        `;
         return false;
       }
       
@@ -380,8 +475,33 @@
       
       recognition.onerror = function(event) {
         console.error('语音识别错误:', event.error);
-        document.getElementById('voiceStatus').textContent = `识别错误: ${event.error}`;
+        let errorMessage = '语音识别错误: ';
+        
+        switch(event.error) {
+          case 'not-allowed':
+          case 'permission-denied':
+            errorMessage += '麦克风权限被拒绝。请检查浏览器设置，允许网站使用麦克风。';
+            break;
+          case 'no-speech':
+            errorMessage += '没有检测到语音输入。请确保麦克风正常工作并说话。';
+            break;
+          case 'audio-capture':
+            errorMessage += '无法捕获音频。请检查麦克风设备是否连接正常。';
+            break;
+          case 'network':
+            errorMessage += '网络错误导致语音识别失败。请检查网络连接。';
+            break;
+          default:
+            errorMessage += event.error;
+        }
+        
+        document.getElementById('voiceStatus').textContent = errorMessage;
         stopVoiceRecognition();
+        
+        // 在微信中，提示用户授权麦克风
+        if (isWeChat && (event.error === 'not-allowed' || event.error === 'permission-denied')) {
+          document.getElementById('wechatTip').style.display = 'block';
+        }
       };
       
       recognition.onend = function() {
@@ -413,6 +533,11 @@
       } catch (error) {
         console.error('启动语音识别失败:', error);
         document.getElementById('voiceStatus').textContent = "启动语音识别失败，请重试";
+        
+        // 在微信中，提示用户授权麦克风
+        if (isWeChat) {
+          document.getElementById('wechatTip').style.display = 'block';
+        }
       }
     }
     
@@ -449,6 +574,12 @@
       
       utterance.onend = function() {
         document.getElementById('voiceStatus').textContent = "";
+        document.getElementById('speakButton').disabled = false;
+      };
+      
+      utterance.onerror = function(event) {
+        console.error('语音合成错误:', event.error);
+        document.getElementById('voiceStatus').textContent = "语音朗读失败";
         document.getElementById('speakButton').disabled = false;
       };
       
@@ -558,8 +689,15 @@
       }
     });
 
-    // 初始化语音识别
+    // 初始化
     window.onload = function() {
+      // 检测是否在微信中
+      isWeChat = detectWeChat();
+      if (isWeChat) {
+        document.getElementById('wechatTip').style.display = 'block';
+      }
+      
+      // 初始化语音识别
       initializeSpeechRecognition();
       
       const chat = document.getElementById('chat');
@@ -567,10 +705,11 @@
         chat.innerHTML += `
           <div class="message ai-message">
             您可以使用文字或语音与我交流，点击麦克风按钮开始语音对话。
+            也可以通过上方的"打开学习应用"按钮访问我的其他功能。
             <div class="message-time">${getCurrentTime()}</div>
           </div>
         `;
-        chat.scrollTop = chatBox.scrollHeight;
+        chat.scrollTop = chat.scrollHeight;
       }, 1000);
     };
   </script>
