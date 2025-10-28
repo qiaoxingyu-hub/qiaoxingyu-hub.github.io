@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员 - 题集管理 - 职教培训及考试应用</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#22c55e', // 绿色主色调
+                        secondary: '#3b82f6', // 蓝色辅助色
+                        neutral: '#f8fafc', // 白色中性色
+                        dark: '#1e293b', // 深色
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'custom': '0 4px 20px rgba(0, 0, 0, 0.08)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .transition-custom {
+                transition: all 0.3s ease;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-graduation-cap text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-gray-800">职教培训及考试应用</h1>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <!-- 用户信息 -->
+                <div class="hidden md:flex items-center space-x-2">
+                    <span id="userName" class="text-gray-700">管理员</span>
+                    <span id="userRole" class="px-2 py-1 bg-secondary text-white text-xs rounded-full">管理员</span>
+                </div>
+                
+                <!-- 移动端用户信息 -->
+                <div class="md:hidden">
+                    <button id="mobileUserMenu" class="flex items-center space-x-1 text-gray-700">
+                        <i class="fa fa-user-circle text-xl"></i>
+                        <span id="mobileUserName">管理员</span>
+                    </button>
+                </div>
+                
+                <!-- 返回首页 -->
+                <a href="home.html" class="text-gray-500 hover:text-primary transition-colors">
+                    <i class="fa fa-home text-lg"></i>
+                    <span class="ml-1 hidden md:inline">首页</span>
+                </a>
+                
+                <!-- 退出登录 -->
+                <button id="logoutBtn" class="text-gray-500 hover:text-red-500 transition-colors">
+                    <i class="fa fa-sign-out text-lg"></i>
+                    <span class="ml-1 hidden md:inline">退出</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 管理员导航 -->
+    <nav class="bg-white border-b border-gray-200">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center space-x-1 overflow-x-auto">
+                <a href="admin-content.html" class="px-4 py-3 text-gray-600 hover:text-primary transition-colors">
+                    内容管理
+                </a>
+                <a href="admin-questions.html" class="px-4 py-3 text-primary border-b-2 border-primary font-medium">
+                    题集管理
+                </a>
+                <a href="admin-statistics.html" class="px-4 py-3 text-gray-600 hover:text-primary transition-colors">
+                    数据统计
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- 页面标题 -->
+        <section class="mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">题集管理</h2>
+                    <p class="text-gray-600 mt-1">管理题库题目，支持添加、编辑和删除</p>
+                </div>
+                
+                <div class="mt-4 md:mt-0 flex space-x-3">
+                    <button id="batchImportBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                        <i class="fa fa-upload mr-2"></i> 批量导入
+                    </button>
+                    <button id="addQuestionBtn" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-green-600 transition-colors">
+                        <i class="fa fa-plus mr-2"></i> 添加题目
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 题目搜索和筛选 -->
+        <section class="mb-8">
+            <div class="bg-white rounded-xl shadow-custom p-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- 搜索框 -->
+                    <div>
+                        <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">搜索题目</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                                <i class="fa fa-search"></i>
+                            </span>
+                            <input type="text" id="searchInput" placeholder="搜索题目内容..."
+                                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-custom">
+                        </div>
+                    </div>
+                    
+                    <!-- 分类筛选 -->
+                    <div>
+                        <label for="categoryFilter" class="block text-sm font-medium text-gray-700 mb-1">分类筛选</label>
+                        <select id="categoryFilter"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-custom">
+                            <option value="all">全部分类</option>
+                            <option value="safety">安全知识</option>
+                            <option value="business">业务知识</option>
+                            <option value="skill">技能操作</option>
+                            <option value="management">管理知识</option>
+                            <option value="quality">质量知识</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 难度筛选 -->
+                    <div>
+                        <label for="difficultyFilter" class="block text-sm font-medium text-gray-700 mb-1">难度筛选</label>
+                        <select id="difficultyFilter"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-custom">
+                            <option value="all">全部难度</option>
+                            <option value="1">简单</option>
+                            <option value="2">较简单</option>
+                            <option value="3">中等</option>
+                            <option value="4">较难</option>
+                            <option value="5">困难</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 排序方式 -->
+                    <div>
+                        <label for="sortBy" class="block text-sm font-medium text-gray-700 mb-1">排序方式</label>
+                        <select id="sortBy"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-custom">
+                            <option value="createdAt_desc">创建时间 (新→旧)</option>
+                            <option value="createdAt_asc">创建时间 (旧→新)</option>
+                            <option value="difficulty_asc">难度 (低→高)</option>
+                            <option value="difficulty_desc">难度 (高→低)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 题目列表 -->
+        <section>
+            <div class="bg-white rounded-xl shadow-custom overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    题目
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    分类
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    难度
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    创建时间
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    操作
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="questionTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- 题目列表将通过JavaScript动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 分页 -->
+                <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                    <div class="flex-1 flex justify-between sm:hidden">
+                        <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            上一页
+                        </a>
+                        <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            下一页
+                        </a>
+                    </div>
+                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-gray-700">
+                                显示 <span class="font-medium">1</span> 到 <span class="font-medium">10</span> 条，共 <span class="font-medium">30</span> 条结果
+                            </p>
+                        </div>
+                        <div>
+                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">上一页</span>
+                                    <i class="fa fa-chevron-left"></i>
+                                </a>
+                                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-primary text-sm font-medium text-white">
+                                    1
+                                </a>
+                                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                    2
+                                </a>
+                                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                    3
+                                </a>
+                                <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <span class="sr-only">下一页</span>
+                                    <i class="fa fa-chevron-right"></i>
+                                </a>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 添加/编辑题目弹窗 -->
+    <div id="questionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                <h3 id="modalTitle" class="text-xl font-bold text-gray-800">添加题目</h3>
+                <button id="closeModalBtn" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="questionForm" class="p-6 space-y-6">
+                <input type="hidden" id="questionId">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 题目内容 -->
+                    <div class="md:col-span-2">
+                        <label for="questionContent" class="block text-sm font-medium text-gray-700 mb-1">题目内容 <span class="text-red-500">*</span></label>
+                        <textarea id="questionContent" name="question" required rows="2"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-custom"
+                            placeholder="请输入题目内容"></textarea>
+                    </div>
+                    
+                    <!-- 分类 -->
+                    <div>
+                        <label for="questionCategory" class="block text-sm font-medium text-gray-700 mb-1">分类 <span class="text-red-500">*</span></label>
+                        <select id="questionCategory" name="category" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-custom">
+                            <option value="">请选择分类</option>
+                            <option value="safety">安全知识</option>
+                            <option value="business">业务知识</option>
+                            <option value="skill">技能操作</option>
+                            <option value="management">管理知识</option>
+                            <option value="quality">质量知识</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 难度 -->
+                    <div>
+                        <label for="questionDifficulty" class="block text-sm font-medium text-gray-700 mb-1">难度 <span class="text-red-500">*</span></label>
+                        <select id="questionDifficulty" name="difficulty" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-custom">
+                            <option value="">请选择难度</option>
+                            <option value="1">简单</option>
+                            <option value="2">较简单</option>
+                            <option value="3">中等</option>
+                            <option value="4">较难</option>
+                            <option value="5">困难</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 选项A -->
+                    <div>
+                        <label for="optionA" class="block text-sm font-medium text-gray-700 mb-1">选项A <span class="text-red-500">*</span></label>
+                        <input type="text" id="optionA" name="optionA" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-custom"
+                            placeholder="请输入选项A内容">
+                    </div>
+                    
+                    <!-- 选项B -->
+                    <div>
+                        <label for="optionB" class="block text-sm font-medium text-gray-700 mb-1">选项B <span class="text-red-500">*</span></label>
+                        <input type="text" id="optionB" name="optionB" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-custom"
+                            placeholder="请输入选项B内容">
+                    </div>
+                    
+                    <!-- 选项C -->
+                    <div>
+                        <label for="optionC" class="block text-sm font-medium text-gray-700 mb-1">选项C <span class="text-red-500">*</span></label>
+                        <input type="text" id="optionC" name="optionC" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-custom"
+                            placeholder="请输入选项C内容">
+                    </div>
+                    
+                    <!-- 选项D -->
+                    <div>
+                        <label for="optionD" class="block text-sm font-medium text-gray-700 mb-1">选项D <span class="text-red-500">*</span></label>
+                        <input type="text" id="optionD" name="optionD" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-custom"
+                            placeholder="请输入选项D内容">
+                    </div>
+                    
+                    <!-- 正确答案 -->
+                    <div>
+                        <label for="correctAnswer" class="block text-sm font-medium text-gray-700 mb-1">正确答案 <span class="text-red-500">*</span></label>
+                        <select id="correctAnswer" name="correctAnswer" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-custom">
+                            <option value="">请选择正确答案</option>
+                            <option value="0">A</option>
+                            <option value="1">B</option>
+                            <option value="2">C</option>
+                            <option value="3">D</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 解析 -->
+                    <div class="md:col-span-2">
+                        <label for="explanation" class="block text-sm font-medium text-gray-700 mb-1">解析 <span class="text-red-500">*</span></label>
+                        <textarea id="explanation" name="explanation" required rows="3"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-custom"
+                            placeholder="请输入解析内容"></textarea>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                    <button type="button" id="cancelBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                        取消
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-green-600 transition-colors">
+                        <span id="submitBtnText">保存</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 批量导入弹窗 -->
+    <div id="importModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl">
+            <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                <h3 class="text-xl font-bold text-gray-800">批量导入题目</h3>
+                <button id="closeImportModalBtn" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <div class="mb-6">
+                    <h4 class="text-lg font-medium text-gray-800 mb-3">导入说明</h4>
+                    <ul class="space-y-2 text-gray-600">
+                        <li class="flex items-start">
+                            <i class="fa fa-info-circle text-primary mt-1 mr-2"></i>
+                            <span>请上传符合模板格式的Excel或CSV文件</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-info-circle text-primary mt-1 mr-2"></i>
+                            <span>文件应包含题目、选项、正确答案和解析等字段</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-info-circle text-primary mt-1 mr-2"></i>
+                            <span>每次导入最多支持100道题目</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">选择文件</label>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
+                        <div class="space-y-1 text-center">
+                            <i class="fa fa-cloud-upload text-gray-400 text-3xl mb-3"></i>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="fileUpload" class="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-green-600">
+                                    <span>上传文件</span>
+                                    <input id="fileUpload" name="file" type="file" class="sr-only" accept=".xlsx,.xls,.csv">
+                                </label>
+                                <p class="pl-1">或拖拽文件到此处</p>
+                            </div>
+                            <p class="text-xs text-gray-500">
+                                Excel, CSV 最大 10MB
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between">
+                    <a href="#" class="text-primary hover:text-green-600 flex items-center">
+                        <i class="fa fa-download mr-1"></i> 下载模板
+                    </a>
+                    
+                    <button id="confirmImportBtn" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-green-600 transition-colors">
+                        开始导入
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除确认弹窗 -->
+    <div id="deleteConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+            <div class="text-center mb-6">
+                <i class="fa fa-exclamation-circle text-4xl text-red-500 mb-4"></i>
+                <h3 class="text-xl font-bold text-gray-800">确认删除</h3>
+                <p class="text-gray-600 mt-2">您确定要删除此题吗？此操作不可撤销。</p>
+            </div>
+            
+            <div class="flex space-x-4">
+                <button id="cancelDeleteBtn" class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                    取消
+                </button>
+                
+                <button id="confirmDeleteBtn" class="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                    确认删除
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-white border-t border-gray-200 mt-8">
+        <div class="container mx-auto px-4 py-6">
+            <div class="text-center text-gray-500 text-sm">
+                <p>© 2025 职教培训及考试应用. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 检查登录状态和权限
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        
+        if (!currentUser || currentUser.role !== 'admin') {
+            // 如果未登录或不是管理员，跳转到登录页
+            alert('您没有管理员权限，请以管理员身份登录！');
+            window.location.href = 'index.html';
+        }
+        
+        // 更新用户信息
+        document.getElementById('userName').textContent = currentUser.name;
+        document.getElementById('mobileUserName').textContent = currentUser.name;
+        
+        // 退出登录
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            }
+        });
+        
+        // 移动端用户菜单
+        document.getElementById('mobileUserMenu').addEventListener('click', function() {
+            alert(`用户名: ${currentUser.name}\n角色: 管理员`);
+        });
+        
+        // 模拟题库数据
+        let questionBank = JSON.parse(localStorage.getItem('questionBank')) || [
+            // 安全知识
+            {
+                id: 'q1',
+                category: 'safety',
+                categoryName: '安全知识',
+                question: '下列哪项不属于安全生产的基本方针？',
+                options: ['安全第一', '预防为主', '综合治理', '事后追责'],
+                correctAnswer: 3,
+                explanation: '安全生产的基本方针是"安全第一、预防为主、综合治理"，不包括"事后追责"。',
+                difficulty: 1,
+                createdAt: '2025-07-15',
+                updatedAt: '2025-07-15'
+            },
+            {
+                id: 'q2',
+                category: 'safety',
+                categoryName: '安全知识',
+                question: '发生火灾时，下列哪种逃生方法是正确的？',
+                options: ['乘坐电梯逃生', '用湿毛巾捂住口鼻，低姿前行', '跳楼逃生', '原路返回'],
+                correctAnswer: 1,
+                explanation: '发生火灾时，应使用湿毛巾捂住口鼻，低姿前行，避免吸入有毒烟雾。',
+                difficulty: 1,
+                createdAt: '2025-07-14',
+                updatedAt: '2025-07-14'
+            },
+            {
+                id: 'q3',
+                category: 'safety',
+                categoryName: '安全知识',
+                question: '下列哪种灭火器适用于扑灭电器火灾？',
+                options: ['泡沫灭火器', '二氧化碳灭火器', '水型灭火器', '以上都可以'],
+                correctAnswer: 1,
+                explanation: '二氧化碳灭火器适用于扑灭电器火灾，因为它不会导电，不会对电器造成损坏。',
+                difficulty: 2,
+                createdAt: '2025-07-13',
+                updatedAt: '2025-07-13'
+            },
+            
+            // 业务知识
+            {
+                id: 'q4',
+                category: 'business',
+                categoryName: '业务知识',
+                question: '下列哪项不属于客户开发流程的环节？',
+                options: ['潜在客户识别', '需求分析', '方案提供', '售后服务'],
+                correctAnswer: 3,
+                explanation: '售后服务属于客户关系维护阶段，不属于客户开发流程。',
+                difficulty: 2,
+                createdAt: '2025-07-12',
+                updatedAt: '2025-07-12'
+            },
+            {
+                id: 'q5',
+                category: 'business',
+                categoryName: '业务知识',
+                question: '在订单处理流程中，下列哪项是第一步？',
+                options: ['订单确认', '订单接收', '信用审核', '生产安排'],
+                correctAnswer: 1,
+                explanation: '订单处理流程的第一步是订单接收，然后才是订单确认、信用审核等环节。',
+                difficulty: 1,
+                createdAt: '2025-07-11',
+                updatedAt: '2025-07-11'
+            },
+            
+            // 技能操作
+            {
+                id: 'q6',
+                category: 'skill',
+                categoryName: '技能操作',
+                question: '在数控机床操作中，下列哪项是开机前必须检查的？',
+                options: ['电源', '气源', '润滑系统', '以上都是'],
+                correctAnswer: 3,
+                explanation: '在数控机床操作中，开机前必须检查电源、气源和润滑系统等。',
+                difficulty: 2,
+                createdAt: '2025-07-10',
+                updatedAt: '2025-07-10'
+            },
+            {
+                id: 'q7',
+                category: 'skill',
+                categoryName: '技能操作',
+                question: '注塑机操作中，下列哪项参数不需要设置？',
+                options: ['注射速度', '注射压力', '保压时间', '模具温度'],
+                correctAnswer: 3,
+                explanation: '模具温度需要控制，但通常是通过模具温度控制器进行设置，而不是在注塑机操作界面设置。',
+                difficulty: 3,
+                createdAt: '2025-07-09',
+                updatedAt: '2025-07-09'
+            },
+            
+            // 管理知识
+            {
+                id: 'q8',
+                category: 'management',
+                categoryName: '管理知识',
+                question: '下列哪项不属于团队管理的基本要素？',
+                options: ['明确目标', '合理分工', '严格控制', '有效沟通'],
+                correctAnswer: 2,
+                explanation: '团队管理的基本要素包括明确目标、合理分工和有效沟通，严格控制不属于基本要素。',
+                difficulty: 2,
+                createdAt: '2025-07-08',
+                updatedAt: '2025-07-08'
+            },
+            {
+                id: 'q9',
+                category: 'management',
+                categoryName: '管理知识',
+                question: '在项目管理中，下列哪项不属于项目计划的内容？',
+                options: ['项目范围', '项目进度', '项目预算', '项目验收'],
+                correctAnswer: 3,
+                explanation: '项目验收是项目结束阶段的工作，不属于项目计划的内容。',
+                difficulty: 2,
+                createdAt: '2025-07-07',
+                updatedAt: '2025-07-07'
+            },
+            
+            // 质量知识
+            {
+                id: 'q10',
+                category: 'quality',
+                categoryName: '质量知识',
+                question: '下列哪项不属于质量管理体系的原则？',
+                options: ['以顾客为关注焦点', '领导作用', '全员参与', '利润最大化'],
+                correctAnswer: 3,
+                explanation: '利润最大化不属于质量管理体系的原则，而以顾客为关注焦点、领导作用和全员参与都是质量管理体系的基本原则。',
+                difficulty: 2,
+                createdAt: '2025-07-06',
+                updatedAt: '2025-07-06'
+            }
+        ];
+        
+        // 保存题库数据到localStorage
+        function saveQuestionBank() {
+            localStorage.setItem('questionBank', JSON.stringify(questionBank));
+        }
+        
+        // 渲染题目列表
+        function renderQuestionList(filteredQuestions = null) {
+            const tableBody = document.getElementById('questionTableBody');
+            const questions = filteredQuestions || questionBank;
+            
+            // 清空表格
+            tableBody.innerHTML = '';
+            
+            if (questions.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                        暂无题目
+                    </td>
+                `;
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            // 渲染题目列表
+            questions.forEach(item => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-gray-900">${item.question}</div>
+                        <div class="mt-2 grid grid-cols-2 gap-2 text-xs">
+                            <div class="bg-gray-50 p-1 rounded">A. ${item.options[0]}</div>
+                            <div class="bg-gray-50 p-1 rounded">B. ${item.options[1]}</div>
+                            <div class="bg-gray-50 p-1 rounded">C. ${item.options[2]}</div>
+                            <div class="bg-gray-50 p-1 rounded">D. ${item.options[3]}</div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getCategoryColorClass(item.category)}">
+                            ${item.categoryName}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            ${Array(5).fill(0).map((_, i) => `
+                                <i class="fa fa-star ${i < item.difficulty ? 'text-yellow-400' : 'text-gray-300'} mr-0.5"></i>
+                            `).join('')}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${formatDateTime(item.createdAt)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button class="edit-btn text-primary hover:text-green-700 mr-3" data-id="${item.id}">
+                            编辑
+                        </button>
+                        <button class="delete-btn text-red-500 hover:text-red-700" data-id="${item.id}">
+                            删除
+                        </button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // 添加编辑和删除按钮事件
+            document.querySelectorAll('.edit-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const questionId = this.getAttribute('data-id');
+                    editQuestion(questionId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const questionId = this.getAttribute('data-id');
+                    showDeleteConfirm(questionId);
+                });
+            });
+        }
+        
+        // 获取分类对应的颜色类
+        function getCategoryColorClass(category) {
+            switch (category) {
+                case 'safety':
+                    return 'bg-red-100 text-red-800';
+                case 'business':
+                    return 'bg-blue-100 text-blue-800';
+                case 'skill':
+                    return 'bg-green-100 text-green-800';
+                case 'management':
+                    return 'bg-purple-100 text-purple-800';
+                case 'quality':
+                    return 'bg-yellow-100 text-yellow-800';
+                default:
+                    return 'bg-gray-100 text-gray-800';
+            }
+        }
+        
+        // 格式化日期时间
+        function formatDateTime(dateTimeString) {
+            const date = new Date(dateTimeString);
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+        }
+        
+        // 打开添加题目弹窗
+        document.getElementById('addQuestionBtn').addEventListener('click', function() {
+            // 重置表单
+            document.getElementById('questionForm').reset();
+            document.getElementById('questionId').value = '';
+            
+            // 设置弹窗标题和按钮文本
+            document.getElementById('modalTitle').textContent = '添加题目';
+            document.getElementById('submitBtnText').textContent = '保存';
+            
+            // 显示弹窗
+            document.getElementById('questionModal').classList.remove('hidden');
+        });
+        
+        // 关闭题目弹窗
+        document.getElementById('closeModalBtn').addEventListener('click', function() {
+            document.getElementById('questionModal').classList.add('hidden');
+        });
+        
+        document.getElementById('cancelBtn').addEventListener('click', function() {
+            document.getElementById('questionModal').classList.add('hidden');
+        });
+        
+        // 点击弹窗外部关闭弹窗
+        document.getElementById('questionModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+        
+        // 编辑题目
+        function editQuestion(questionId) {
+            const question = questionBank.find(item => item.id === questionId);
+            
+            if (!question) return;
+            
+            // 填充表单数据
+            document.getElementById('questionId').value = question.id;
+            document.getElementById('questionContent').value = question.question;
+            document.getElementById('questionCategory').value = question.category;
+            document.getElementById('questionDifficulty').value = question.difficulty;
+            document.getElementById('optionA').value = question.options[0];
+            document.getElementById('optionB').value = question.options[1];
+            document.getElementById('optionC').value = question.options[2];
+            document.getElementById('optionD').value = question.options[3];
+            document.getElementById('correctAnswer').value = question.correctAnswer;
+            document.getElementById('explanation').value = question.explanation;
+            
+            // 设置弹窗标题和按钮文本
+            document.getElementById('modalTitle').textContent = '编辑题目';
+            document.getElementById('submitBtnText').textContent = '更新';
+            
+            // 显示弹窗
+            document.getElementById('questionModal').classList.remove('hidden');
+        }
+        
+        // 打开批量导入弹窗
+        document.getElementById('batchImportBtn').addEventListener('click', function() {
+            document.getElementById('importModal').classList.remove('hidden');
+        });
+        
+        // 关闭批量导入弹窗
+        document.getElementById('closeImportModalBtn').addEventListener('click', function() {
+            document.getElementById('importModal').classList.add('hidden');
+        });
+        
+        // 点击批量导入弹窗外部关闭弹窗
+        document.getElementById('importModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+        
+        // 确认导入
+        document.getElementById('confirmImportBtn').addEventListener('click', function() {
+            const fileInput = document.getElementById('fileUpload');
+            
+            if (fileInput.files.length === 0) {
+                alert('请选择要导入的文件！');
+                return;
+            }
+            
+            // 在实际应用中，这里应该处理文件上传和解析
+            // 这里使用模拟数据
+            alert('题目导入功能正在开发中，敬请期待！');
+            
+            // 关闭弹窗
+            document.getElementById('importModal').classList.add('hidden');
+        });
+        
+        // 显示删除确认弹窗
+        function showDeleteConfirm(questionId) {
+            document.getElementById('confirmDeleteBtn').setAttribute('data-id', questionId);
+            document.getElementById('deleteConfirmModal').classList.remove('hidden');
+        }
+        
+        // 关闭删除确认弹窗
+        document.getElementById('cancelDeleteBtn').addEventListener('click', function() {
+            document.getElementById('deleteConfirmModal').classList.add('hidden');
+        });
+        
+        // 点击删除确认弹窗外部关闭弹窗
+        document.getElementById('deleteConfirmModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+        
+        // 确认删除
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            const questionId = this.getAttribute('data-id');
+            const index = questionBank.findIndex(item => item.id === questionId);
+            
+            if (index !== -1) {
+                questionBank.splice(index, 1);
+                saveQuestionBank();
+                renderQuestionList();
+                
+                // 显示成功提示
+                alert('题目已成功删除！');
+            }
+            
+            // 关闭弹窗
+            document.getElementById('deleteConfirmModal').classList.add('hidden');
+        });
+        
+        // 表单提交
+        document.getElementById('questionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 获取表单数据
+            const questionId = document.getElementById('questionId').value;
+            const question = document.getElementById('questionContent').value;
+            const category = document.getElementById('questionCategory').value;
+            const categoryName = document.getElementById('questionCategory').options[document.getElementById('questionCategory').selectedIndex].text;
+            const difficulty = parseInt(document.getElementById('questionDifficulty').value);
+            const optionA = document.getElementById('optionA').value;
+            const optionB = document.getElementById('optionB').value;
+            const optionC = document.getElementById('optionC').value;
+            const optionD = document.getElementById('optionD').value;
+            const correctAnswer = parseInt(document.getElementById('correctAnswer').value);
+            const explanation = document.getElementById('explanation').value;
+            
+            const now = new Date().toISOString();
+            
+            if (questionId) {
+                // 编辑现有题目
+                const index = questionBank.findIndex(item => item.id === questionId);
+                
+                if (index !== -1) {
+                    questionBank[index] = {
+                        ...questionBank[index],
+                        question,
+                        category,
+                        categoryName,
+                        difficulty,
+                        options: [optionA, optionB, optionC, optionD],
+                        correctAnswer,
+                        explanation,
+                        updatedAt: now
+                    };
+                    
+                    // 显示成功提示
+                    alert('题目已成功更新！');
+                }
+            } else {
+                // 添加新题目
+                const newQuestion = {
+                    id: 'q' + Date.now(),
+                    category,
+                    categoryName,
+                    question,
+                    options: [optionA, optionB, optionC, optionD],
+                    correctAnswer,
+                    explanation,
+                    difficulty,
+                    createdAt: now,
+                    updatedAt: now
+                };
+                
+                questionBank.push(newQuestion);
+                
+                // 显示成功提示
+                alert('题目已成功添加！');
+            }
+            
+            // 保存数据
+            saveQuestionBank();
+            
+            // 重新渲染列表
+            renderQuestionList();
+            
+            // 关闭弹窗
+            document.getElementById('questionModal').classList.add('hidden');
+        });
+        
+        // 搜索功能
+        document.getElementById('searchInput').addEventListener('input', function() {
+            filterQuestionList();
+        });
+        
+        // 分类筛选
+        document.getElementById('categoryFilter').addEventListener('change', function() {
+            filterQuestionList();
+        });
+        
+        // 难度筛选
+        document.getElementById('difficultyFilter').addEventListener('change', function() {
+            filterQuestionList();
+        });
+        
+        // 排序方式
+        document.getElementById('sortBy').addEventListener('change', function() {
+            filterQuestionList();
+        });
+        
+        // 筛选题目列表
+        function filterQuestionList() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const difficultyFilter = document.getElementById('difficultyFilter').value;
+            const sortBy = document.getElementById('sortBy').value;
+            
+            let filteredQuestions = [...questionBank];
+            
+            // 搜索筛选
+            if (searchTerm) {
+                filteredQuestions = filteredQuestions.filter(item => 
+                    item.question.toLowerCase().includes(searchTerm) || 
+                    item.options.some(option => option.toLowerCase().includes(searchTerm)) ||
+                    item.explanation.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // 分类筛选
+            if (categoryFilter !== 'all') {
+                filteredQuestions = filteredQuestions.filter(item => item.category === categoryFilter);
+            }
+            
+            // 难度筛选
+            if (difficultyFilter !== 'all') {
+                filteredQuestions = filteredQuestions.filter(item => item.difficulty === parseInt(difficultyFilter));
+            }
+            
+            // 排序
+            if (sortBy === 'createdAt_desc') {
+                filteredQuestions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            } else if (sortBy === 'createdAt_asc') {
+                filteredQuestions.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            } else if (sortBy === 'difficulty_asc') {
+                filteredQuestions.sort((a, b) => a.difficulty - b.difficulty);
+            } else if (sortBy === 'difficulty_desc') {
+                filteredQuestions.sort((a, b) => b.difficulty - a.difficulty);
+            }
+            
+            // 重新渲染列表
+            renderQuestionList(filteredQuestions);
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 渲染题目列表
+            renderQuestionList();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学习内容详情 - 职教培训及考试应用</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#22c55e', // 绿色主色调
+                        secondary: '#3b82f6', // 蓝色辅助色
+                        neutral: '#f8fafc', // 白色中性色
+                        dark: '#1e293b', // 深色
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'custom': '0 4px 20px rgba(0, 0, 0, 0.08)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .transition-custom {
+                transition: all 0.3s ease;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-graduation-cap text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-gray-800">职教培训及考试应用</h1>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <!-- 用户信息 -->
+                <div class="hidden md:flex items-center space-x-2">
+                    <span id="userName" class="text-gray-700">用户名</span>
+                    <span id="userRole" class="px-2 py-1 bg-primary text-white text-xs rounded-full">普通用户</span>
+                </div>
+                
+                <!-- 移动端用户信息 -->
+                <div class="md:hidden">
+                    <button id="mobileUserMenu" class="flex items-center space-x-1 text-gray-700">
+                        <i class="fa fa-user-circle text-xl"></i>
+                        <span id="mobileUserName">用户名</span>
+                    </button>
+                </div>
+                
+                <!-- 返回列表 -->
+                <a href="learning-list.html" class="text-gray-500 hover:text-primary transition-colors">
+                    <i class="fa fa-list text-lg"></i>
+                    <span class="ml-1 hidden md:inline">列表</span>
+                </a>
+                
+                <!-- 返回首页 -->
+                <a href="home.html" class="text-gray-500 hover:text-primary transition-colors">
+                    <i class="fa fa-home text-lg"></i>
+                    <span class="ml-1 hidden md:inline">首页</span>
+                </a>
+                
+                <!-- 退出登录 -->
+                <button id="logoutBtn" class="text-gray-500 hover:text-red-500 transition-colors">
+                    <i class="fa fa-sign-out text-lg"></i>
+                    <span class="ml-1 hidden md:inline">退出</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- 内容加载状态 -->
+        <div id="loadingState" class="flex justify-center items-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+        
+        <!-- 内容不存在提示 -->
+        <div id="notFoundState" class="bg-white rounded-xl shadow-custom p-8 text-center hidden">
+            <i class="fa fa-exclamation-circle text-4xl text-red-500 mb-4"></i>
+            <h2 class="text-xl font-bold text-gray-800 mb-2">内容不存在</h2>
+            <p class="text-gray-600 mb-6">您请求的培训内容不存在或已被删除</p>
+            <a href="learning-list.html" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-green-600 transition-colors">
+                <i class="fa fa-arrow-left mr-2"></i> 返回学习列表
+            </a>
+        </div>
+        
+        <!-- 内容详情 -->
+        <div id="contentDetail" class="hidden">
+            <!-- 内容头部 -->
+            <section class="mb-6">
+                <div class="bg-white rounded-xl shadow-custom overflow-hidden">
+                    <div id="contentImage" class="h-64 bg-gray-200 relative">
+                        <!-- 图片将通过JavaScript动态设置 -->
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="flex flex-wrap items-center gap-2 mb-4">
+                            <span id="contentCategory" class="px-3 py-1 bg-primary text-white text-sm font-medium rounded-full">
+                                安全培训
+                            </span>
+                            <span class="text-gray-500 text-sm"><i class="fa fa-clock-o mr-1"></i> <span id="contentDuration">2小时</span></span>
+                            <span class="text-gray-500 text-sm"><i class="fa fa-calendar mr-1"></i> <span id="contentCreatedAt">2025-07-15</span></span>
+                        </div>
+                        
+                        <h1 id="contentTitle" class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
+                            安全生产基础知识
+                        </h1>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <button id="likeButton" class="flex items-center text-gray-500 hover:text-red-500 transition-colors">
+                                    <i class="fa fa-heart-o mr-1"></i>
+                                    <span id="likeCount">128</span>
+                                </button>
+                                <button id="bookmarkButton" class="flex items-center text-gray-500 hover:text-primary transition-colors ml-6">
+                                    <i class="fa fa-bookmark-o mr-1"></i>
+                                    <span>收藏</span>
+                                </button>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <button id="shareButton" class="flex items-center text-gray-500 hover:text-primary transition-colors">
+                                    <i class="fa fa-share-alt mr-1"></i>
+                                    <span>分享</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 内容主体 -->
+            <section class="mb-8">
+                <div class="bg-white rounded-xl shadow-custom p-6">
+                    <div id="contentBody" class="prose max-w-none">
+                        <!-- 内容将通过JavaScript动态设置 -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 内容导航 -->
+            <section class="mb-8">
+                <div class="bg-white rounded-xl shadow-custom p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">内容导航</h3>
+                    
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div id="prevContent" class="flex-1">
+                            <a href="#" class="flex items-center text-primary hover:text-green-600 transition-colors">
+                                <i class="fa fa-arrow-left mr-2"></i>
+                                <span>上一篇：<span id="prevContentTitle">安全生产法律法规</span></span>
+                            </a>
+                        </div>
+                        
+                        <div class="hidden md:block">
+                            <a href="learning-list.html" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                                返回列表
+                            </a>
+                        </div>
+                        
+                        <div id="nextContent" class="flex-1 text-right">
+                            <a href="#" class="flex items-center justify-end text-primary hover:text-green-600 transition-colors">
+                                <span>下一篇：<span id="nextContentTitle">安全操作规程</span></span>
+                                <i class="fa fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 相关推荐 -->
+            <section>
+                <h2 class="text-xl font-bold text-gray-800 mb-4">相关推荐</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="relatedContent">
+                    <!-- 相关内容将通过JavaScript动态生成 -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white border-t border-gray-200 mt-8">
+        <div class="container mx-auto px-4 py-6">
+            <div class="text-center text-gray-500 text-sm">
+                <p>© 2025 职教培训及考试应用. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 分享弹窗 -->
+    <div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">分享学习内容</h3>
+                <button id="closeShareModal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">分享链接</label>
+                <div class="flex">
+                    <input type="text" id="shareLink" value="https://vocational-edu.example.com/learning-detail.html?id=1" readonly
+                        class="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-primary focus:border-primary">
+                    <button id="copyLinkBtn" class="px-4 py-2 bg-primary text-white rounded-r-lg hover:bg-green-600 transition-colors">
+                        <i class="fa fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">分享到</label>
+                <div class="flex space-x-4 justify-center">
+                    <button class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors">
+                        <i class="fa fa-weixin"></i>
+                    </button>
+                    <button class="w-10 h-10 rounded-full bg-blue-400 text-white flex items-center justify-center hover:bg-blue-500 transition-colors">
+                        <i class="fa fa-qq"></i>
+                    </button>
+                    <button class="w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors">
+                        <i class="fa fa-weibo"></i>
+                    </button>
+                    <button class="w-10 h-10 rounded-full bg-gray-700 text-white flex items-center justify-center hover:bg-gray-800 transition-colors">
+                        <i class="fa fa-link"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 检查登录状态
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        
+        if (!currentUser) {
+            // 如果未登录，跳转到登录页
+            window.location.href = 'index.html';
+        }
+        
+        // 更新用户信息
+        document.getElementById('userName').textContent = currentUser.name;
+        document.getElementById('mobileUserName').textContent = currentUser.name;
+        
+        // 更新用户角色
+        const userRoleElement = document.getElementById('userRole');
+        if (currentUser.role === 'admin') {
+            userRoleElement.textContent = '管理员';
+            userRoleElement.classList.remove('bg-primary');
+            userRoleElement.classList.add('bg-secondary');
+        }
+        
+        // 退出登录
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            }
+        });
+        
+        // 移动端用户菜单
+        document.getElementById('mobileUserMenu').addEventListener('click', function() {
+            alert(`用户名: ${currentUser.name}\n角色: ${currentUser.role === 'admin' ? '管理员' : '普通用户'}`);
+        });
+        
+        // 模拟培训内容数据
+        const trainingContent = [
+            {
+                id: '1',
+                title: '安全生产基础知识',
+                category: 'safety',
+                categoryName: '安全培训',
+                description: '学习安全生产的基本概念、法律法规和安全操作规程，提高安全意识。',
+                duration: '2小时',
+                image: 'https://picsum.photos/id/1/800/400',
+                createdAt: '2025-07-15',
+                content: `
+                    <h2>安全生产概述</h2>
+                    <p>安全生产是指在生产经营活动中，为了避免造成人员伤害和财产损失的事故而采取相应的事故预防和控制措施，以保证从业人员的人身安全与健康，保证生产经营活动得以顺利进行的相关活动。</p>
+                    
+                    <h3>安全生产的重要性</h3>
+                    <ul>
+                        <li>保障员工生命安全和身体健康</li>
+                        <li>保障企业正常生产经营</li>
+                        <li>减少经济损失</li>
+                        <li>维护社会稳定</li>
+                        <li>促进企业可持续发展</li>
+                    </ul>
+                    
+                    <h3>安全生产方针</h3>
+                    <p>我国安全生产方针是"安全第一、预防为主、综合治理"。</p>
+                    <ul>
+                        <li><strong>安全第一</strong>：把安全放在首位，优先考虑从业人员和其他人员的安全</li>
+                        <li><strong>预防为主</strong>：预防事故的发生，防患于未然</li>
+                        <li><strong>综合治理</strong>：综合运用法律、行政、经济、技术等手段，从源头上防范事故</li>
+                    </ul>
+                    
+                    <h2>安全生产法律法规</h2>
+                    <p>我国安全生产保障企业和从业人员必须遵守国家有关安全生产的法律法规，依法进行生产经营活动。</p>
+                    
+                    <h3>主要法律法规</h3>
+                    <ul>
+                        <li>《中华人民共和国安全生产法》</li>
+                        <li>《中华人民共和国劳动法》</li>
+                        <li>《中华人民共和国职业病防治法》</li>
+                        <li>《中华人民共和国消防法》</li>
+                        <li>《中华人民共和国特种设备安全法》</li>
+                    </ul>
+                    
+                    <h3>从业人员的权利和义务</h3>
+                    <h4>权利：</h4>
+                    <ul>
+                        <li>知情权：了解作业场所和工作岗位存在的危险因素、防范措施及事故应急措施</li>
+                        <li>建议权：对本单位的安全生产工作提出建议</li>
+                        <li>批评、检举、控告权：对本单位安全生产工作中存在的问题提出批评、检举、控告</li>
+                        <li>拒绝权：拒绝违章指挥和强令冒险作业</li>
+                        <li>紧急避险权：发现直接危及人身安全的紧急情况时，有权停止作业或者在采取可能的应急措施后撤离作业场所</li>
+                        <li>赔偿权：因生产安全事故受到损害的从业人员职工，除依法享有工伤保险外，依照有关民事法律尚有获得赔偿的权利的，有权向本单位提出赔偿要求</li>
+                    </ul>
+                    
+                    <h4>义务：</h4>
+                    <ul>
+                        <li>遵章守纪、服从管理的义务</li>
+                        <li>正确佩戴和使用劳动防护用品的义务</li>
+                        <li>接受安全生产教育和培训的义务</li>
+                        <li>发现事故隐患及时报告的义务</li>
+                    </ul>
+                    
+                    <h2>常见安全隐患及预防措施</h2>
+                    
+                    <h3>高处坠落</h3>
+                    <p>高处坠落是指在高处作业中发生坠落造成的伤亡事故。</p>
+                    <h4>预防措施：</h4>
+                    <ul>
+                        <li>正确使用安全带、安全绳等防护用品</li>
+                        <li>检查作业平台、脚手架等设施的安全性</li>
+                        <li>严禁在未采取安全措施的情况下攀爬高处</li>
+                        <li>严禁在高处作业时嬉戏打闹</li>
+                    </ul>
+                    
+                    <h3>物体打击</h3>
+                    <p>物体打击是指失控的物体在惯性力或重力等其他外力的作用下产生运动，打击人体而造成人身伤亡事故。</p>
+                    <h4>预防措施：</h4>
+                    <ul>
+                        <li>正确佩戴安全帽</li>
+                        <li>严禁在高处抛掷物品</li>
+                        <li>清理作业现场，保持通道畅通</li>
+                        <li>设置警示标志，提醒注意安全</li>
+                    </ul>
+                    
+                    <h3>电气伤害</h3>
+                    <p>电气伤害是指电流通过人体或电弧对人体造成的伤害。</p>
+                    <h4>预防措施：</h4>
+                    <ul>
+                        <li>严格遵守电气安全操作规程</li>
+                        <li>定期检查电气设备和线路</li>
+                        <li>使用绝缘良好的电气设备和工具</li>
+                        <li>严禁带电作业</li>
+                    </ul>
+                    
+                    <h2>安全操作规程</h2>
+                    <p>各岗位从业人员必须严格遵守本岗位的安全操作规程，确保安全生产。</p>
+                    
+                    <h3>一般安全操作规程</h3>
+                    <ul>
+                        <li>进入工作岗位必须按规定穿戴劳动防护用品</li>
+                        <li>严禁酒后上岗、疲劳作业</li>
+                        <li>严禁在工作场所吸烟、嬉戏打闹</li>
+                        <li>保持工作场所整洁有序</li>
+                        <li>熟悉本岗位的安全操作规程和应急处置措施</li>
+                        <li>发现安全隐患及时报告</li>
+                    </ul>
+                    
+                    <h2>应急处置</h2>
+                    <p>发生安全事故时，应立即采取应急措施，最大限度地减少人员伤亡和财产损失。</p>
+                    
+                    <h3>应急处置原则</h3>
+                    <ul>
+                        <li>先救人后救物</li>
+                        <li>先控制后消灭</li>
+                        <li>先重点后一般</li>
+                        <li>先近后远</li>
+                    </ul>
+                    
+                    <h3>应急联系方式</h3>
+                    <ul>
+                        <li>火警：119</li>
+                        <li>急救：120</li>
+                        <li>报警：110</li>
+                        <li>公司安全部门：XXX-XXXXXXXXX</li>
+                    </ul>
+                    
+                    <h2>总结</h2>
+                    <p>安全生产是企业发展的基础，也是每个从业人员的责任。我们要始终提高安全意识，严格遵守安全知识，严格遵守安全操作规程，共同营造安全的工作环境。</p>
+                `
+            },
+            {
+                id: '2',
+                title: '业务流程流程与规范',
+                category: 'business',
+                categoryName: '业务培训',
+                description: '详细介绍公司各项业务流程和操作规范，帮助新员工快速熟悉工作内容。',
+                duration: '3小时',
+                image: 'https://picsum.photos/id/20/800/400',
+                createdAt: '2025-07-10',
+                content: `
+                    <h2>业务流程概述</h2>
+                    <p>业务流程是指为了实现特定业务目标而进行的一系列有序的活动或任务。规范的业务流程可以提高工作效率，保证工作质量，降低运营成本。</p>
+                    
+                    <h3>业务流程的重要性</h3>
+                    <ul>
+                        <li>提高工作效率</li>
+                        <li>保证工作质量</li>
+                        <li>降低运营成本</li>
+                        <li>便于管理和监控</li>
+                        <li>有利于知识传承和培训</li>
+                    </ul>
+                    
+                    <h2>主要业务流程</h2>
+                    
+                    <h3>1. 客户开发流程</h3>
+                    <p>客户开发是公司业务的起点，包括潜在客户识别、联系、需求分析、方案提供等环节。</p>
+                    
+                    <h4>流程步骤：</h4>
+                    <ol>
+                        <li>潜在客户识别：通过市场调研、行业分析等方式识别潜在客户</li>
+                        <li>客户联系：通过电话、邮件、拜访等方式与潜在客户建立联系</li>
+                        <li>需求分析：了解客户的需求和痛点</li>
+                        <li>方案提供：根据客户需求提供相应的产品或服务方案</li>
+                        <li>方案讲解：向客户详细讲解方案内容和优势</li>
+                        <li>异议处理：解答客户疑问，处理客户异议</li>
+                        <li>跟进维护：定期跟进客户，维护客户关系</li>
+                    </ol>
+                    
+                    <h4>注意事项：</h4>
+                    <ul>
+                        <li>保持专业形象</li>
+                        <li>了解客户需求，提供个性化方案</li>
+                        <li>及时跟进，保持联系</li>
+                        <li>尊重客户，保护客户信息</li>
+                    </ul>
+                    
+                    <h3>2. 订单处理流程</h3>
+                    <p>订单处理是客户下单后的一系列处理活动，包括订单接收、确认、安排生产、发货等环节。</p>
+                    
+                    <h4>流程步骤：</h4>
+                    <ol>
+                        <li>订单接收：接收客户订单</li>
+                        <li>订单确认：确认订单信息，包括产品、数量、价格、交货期等</li>
+                        <li>信用审核：对客户信用进行审核</li>
+                        <li>生产安排：根据订单要求安排生产计划</li>
+                        <li>生产过程跟踪：跟踪生产进度，确保按时交货</li>
+                        <li>质量检验：对产品进行质量检验</li>
+                        <li>包装发货：按照客户要求进行包装和发货</li>
+                        <li>物流跟踪：跟踪物流运输状态</li>
+                        <li>客户签收：确认客户收到货物</li>
+                    </ol>
+                    
+                    <h4>注意事项：</h4>
+                    <ul>
+                        <li>确保订单信息准确无误</li>
+                        <li>及时订单处理及时</li>
+                        <li>保持与客户的沟通</li>
+                        <li>及时处理订单异常情况</li>
+                    </ul>
+                    
+                    <h3>3. 售后服务流程</h3>
+                    <p>售后服务是指产品销售后为客户提供的各种服务，包括安装、调试、维修、保养等。</p>
+                    
+                    <h4>流程步骤：</h4>
+                    <ol>
+                        <li>服务请求接收：接收客户的服务请求</li>
+                        <li>问题记录：记录客户反映的问题</li>
+                        <li>问题分析：分析问题原因</li>
+                        <li>解决方案制定：制定相应的解决方案</li>
+                        <li>服务安排：安排技术人员提供服务</li>
+                        <li>服务实施：技术人员上门或远程提供服务</li>
+                        <li>服务确认：客户确认服务完成</li>
+                        <li>服务评价：客户对服务进行评价</li>
+                        <li>问题归档：将问题及解决方案归档</li>
+                    </ol>
+                    
+                    <h4>注意事项：</h4>
+                    <ul>
+                        <li>及时服务响应及时</li>
+                        <li>保持耐心和专业</li>
+                        <li>尊重客户意见</li>
+                        <li>不断服务质量</li>
+                    </ul>
+                    
+                    <h2>业务操作规范</h2>
+                    
+                    <h3>1. 客户信息管理规范</h3>
+                    <p>客户信息是公司的重要资产，必须妥善管理和保护。</p>
+                    
+                    <h4>规范要求：</h4>
+                    <ul>
+                        <li>客户信息必须准确、完整</li>
+                        <li>客户信息必须及时更新</li>
+                        <li>客户信息必须保密，不得泄露</li>
+                        <li>客户信息必须存储在指定的系统中</li>
+                        <li>定期对客户信息进行备份</li>
+                    </ul>
+                    
+                    <h3>2. 产品报价规范</h3>
+                    <p>产品报价是客户决策的重要依据，必须规范、透明。</p>
+                    
+                    <h4>规范要求：</h4>
+                    <ul>
+                        <li>报价必须必须基于公司定价政策</li>
+                        <li>报价必须包含所有相关费用</li>
+                        <li>报价必须有有效期</li>
+                        <li>报价必须由授权人员审批</li>
+                        <li>报价单必须有统一格式</li>
+                    </ul>
+                    
+                    <h3>3. 合同管理规范</h3>
+                    <p>合同是公司与客户之间的法律约定，必须严格管理。</p>
+                    
+                    <h4>规范要求：</h4>
+                    <ul>
+                        <li>合同必须使用公司标准模板</li>
+                        <li>合同条款必须明确、无歧义</li>
+                        <li>合同必须由授权人员签署</li>
+                        <li>合同必须存档保存</li>
+                        <li>合同变更必须经过双方同意</li>
+                    </ul>
+                    
+                    <h2>业务沟通规范</h2>
+                    
+                    <h3>1. 内部沟通规范</h3>
+                    <p>良好的内部沟通可以提高工作效率，避免误解。</p>
+                    
+                    <h4>规范要求：</h4>
+                    <ul>
+                        <li>使用公司指定的沟通工具</li>
+                        <li>邮件主题必须明确</li>
+                        <li>重要信息必须书面确认</li>
+                        <li>会议必须有议程和记录</li>
+                        <li>及时回复工作相关的信息</li>
+                    </ul>
+                    
+                    <h3>2. 外部沟通规范</h3>
+                    <p>外部沟通代表公司形象，必须专业、礼貌。</p>
+                    
+                    <h4>规范要求：</h4>
+                    <ul>
+                        <li>使用公司统一的名片和邮件签名</li>
+                        <li>保持专业形象和礼貌用语</li>
+                        <li>及时回复客户的咨询和问题</li>
+                        <li>不得做出超出授权范围的承诺</li>
+                        <li>保护公司商业秘密</li>
+                    </ul>
+                    
+                    <h2>总结</h2>
+                    <p>规范的业务流程和操作规范是公司正常运营的基础，也是每个员工必须遵守的准则。希望大家认真学习并严格执行，共同提高公司的业务水平和服务质量。</p>
+                `
+            },
+            {
+                id: '3',
+                title: '设备操作技能提升',
+                category: 'skill',
+                categoryName: '技能培训',
+                description: '针对生产设备的操作技巧和维护保养进行专业培训，提升操作熟练度。',
+                duration: '4小时',
+                image: 'https://picsum.photos/id/26/800/400',
+                createdAt: '2025-07-05',
+                content: `
+                    <h2>设备操作概述</h2>
+                    <p>生产设备是企业生产的重要工具，正确操作和维护设备不仅可以提高生产效率，保证产品质量，还可以延长设备使用寿命，降低生产成本。</p>
+                    
+                    <h3>设备操作的重要性</h3>
+                    <ul>
+                        <li>提高生产效率</li>
+                        <li>保证产品质量</li>
+                        <li>延长设备使用寿命</li>
+                        <li>降低生产成本</li>
+                        <li>确保操作安全</li>
+                    </ul>
+                    
+                    <h3>设备操作人员的基本要求</h3>
+                    <ul>
+                        <li>经过专业培训，取得操作资格证书</li>
+                        <li>熟悉设备的结构、性能和工作原理</li>
+                        <li>掌握设备的操作规程和维护保养方法</li>
+                        <li>了解设备的安全防护措施</li>
+                        <li>具备一定的故障判断和处理能力</li>
+                    </ul>
+                    
+                    <h2>常见生产设备操作技能</h2>
+                    
+                    <h3>1. 数控机床操作</h3>
+                    <p>数控机床是一种高精度、高效率的自动化加工设备，广泛应用于机械制造行业。</p>
+                    
+                    <h4>操作步骤：</h4>
+                    <ol>
+                        <li>开机前检查：检查电源、气源、润滑系统等</li>
+                        <li>开机：按照规定顺序开启设备</li>
+                        <li>程序输入：将加工程序输入到机床控制系统</li>
+                        <li>程序检查：检查程序的正确性</li>
+                        <li>工件装夹：将工件正确装夹在工作台上</li>
+                        <li>刀具安装：安装并调整刀具</li>
+                        <li>对刀：进行刀具长度和半径补偿</li>
+                        <li>加工参数设置：设置切削速度、进给量等参数</li>
+                        <li>试切：进行试切，检查加工效果</li>
+                        <li>正式加工：开始正式加工</li>
+                        <li>加工过程监控：监控加工过程，及时处理异常情况</li>
+                        <li>加工完成：加工完成后，关闭设备</li>
+                    </ol>
+                    
+                    <h4>操作技巧：</h4>
+                    <ul>
+                        <li>熟悉数控系统的操作界面和功能</li>
+                        <li>掌握常用G代码和M代码的含义和用法</li>
+                        <li>合理选择切削参数，提高加工效率和质量</li>
+                        <li>注意刀具的磨损情况，及时更换刀具</li>
+                        <li>保持设备清洁，定期进行维护保养</li>
+                    </ul>
+                    
+                    <h3>2. 注塑机操作</h3>
+                    <p>注塑机是一种将塑料原料加热融化后注入模具中成型的设备，广泛应用于塑料制品生产。</p>
+                    
+                    <h4>操作步骤：</h4>
+                    <ol>
+                        <li>开机前检查：检查电源、气源、液压系统等</li>
+                        <li>开机：按照规定顺序开启设备</li>
+                        <li>模具安装：将模具安装在注塑机上</li>
+                        <li>模具调整：调整模具的位置和锁模力</li>
+                        <li>原料准备：准备所需的塑料原料</li>
+                        <li>料筒加热：加热料筒至设定温度</li>
+                        <li>参数设置：设置注射速度、压力、保压等参数</li>
+                        <li>试生产：进行试生产，检查产品质量</li>
+                        <li>正式生产：开始正式生产</li>
+                        <li>生产过程监控：监控生产过程，及时处理异常情况</li>
+                        <li>生产完成：生产完成后，关闭设备</li>
+                    </ol>
+                    
+                    <h4>操作技巧：</h4>
+                    <ul>
+                        <li>熟悉注塑机的结构和工作原理</li>
+                        <li>掌握注塑工艺参数的调整方法</li>
+                        <li>注意原料的干燥和预处理</li>
+                        <li>定期清洁料筒和模具</li>
+                        <li>注意模具的冷却和温度控制</li>
+                    </ul>
+                    
+                    <h3>3. 焊接设备操作</h3>
+                    <p>焊接设备是一种将金属材料加热融化后连接在一起的设备，广泛应用于机械制造、建筑等行业。</p>
+                    
+                    <h4>操作步骤：</h4>
+                    <ol>
+                        <li>开机前检查：检查电源、气源、焊接设备等</li>
+                        <li>开机：按照规定顺序开启设备</li>
+                        <li>工件准备：准备所需焊接的工件</li>
+                        <li>工件清理：清理工件表面的油污、锈迹等</li>
+                        <li>工件定位：将工件正确定位</li>
+                        <li>焊接参数设置：设置焊接电流、电压、焊接速度等参数</li>
+                        <li>焊接操作：进行焊接操作</li>
+                        <li>焊接过程监控：监控焊接过程，及时处理异常情况</li>
+                        <li>焊接完成：焊接完成后，关闭设备</li>
+                        <li>焊缝检查：检查焊缝质量</li>
+                    </ol>
+                    
+                    <h4>操作技巧：</h4>
+                    <ul>
+                        <li>熟悉焊接设备的结构和工作原理</li>
+                        <li>掌握焊接工艺参数的调整方法</li>
+                        <li>注意焊接姿势和焊接速度</li>
+                        <li>保持焊接环境通风良好</li>
+                        <li>正确使用个人防护用品</li>
+                    </ul>
+                    
+                    <h2>设备维护保养</h2>
+                    
+                    <h3>设备维护保养的重要性</h3>
+                    <ul>
+                        <li>延长设备使用寿命</li>
+                        <li>提高设备性能</li>
+                        <li>减少设备故障</li>
+                        <li>降低维修成本</li>
+                        <li>确保操作安全</li>
+                    </ul>
+                    
+                    <h3>设备维护保养的类型</h3>
+                    
+                    <h4>1. 日常维护保养</h4>
+                    <p>日常维护保养是指操作人员在日常工作中对设备进行的维护保养。</p>
+                    
+                    <h5>主要内容：</h5>
+                    <ul>
+                        <li>设备清洁：清洁设备表面和内部</li>
+                        <li>润滑：按照规定添加润滑油</li>
+                        <li>紧固：检查并紧固松动的螺丝和部件</li>
+                        <li>调整：调整设备的间隙和位置</li>
+                        <li>检查：检查设备的运行状态和安全装置</li>
+                    </ul>
+                    
+                    <h4>2. 定期维护保养</h4>
+                    <p>定期维护保养是指按照规定的时间间隔对设备进行的维护保养。</p>
+                    
+                    <h5>主要内容：</h5>
+                    <ul>
+                        <li>全面清洁：对设备进行全面清洁</li>
+                        <li>润滑系统检查：检查润滑系统的工作状态</li>
+                        <li>电气系统检查：检查电气系统的绝缘性能和连接情况</li>
+                        <li>液压系统检查：检查液压系统的压力和泄漏情况</li>
+                        <li>机械系统检查：检查机械系统的磨损和运行情况</li>
+                        <li>安全装置检查：检查安全装置的有效性</li>
+                    </ul>
+                    
+                    <h4>3. 预防性维护保养</h4>
+                    <p>预防性维护保养是指根据设备的运行情况和使用经验，提前对可能出现故障的部件进行更换和维修。</p>
+                    
+                    <h5>主要内容：</h5>
+                    <ul>
+                        <li>易损件更换：定期更换易损件</li>
+                        <li>部件检查：检查关键部件的磨损情况</li>
+                        <li>性能测试：测试设备的性能参数</li>
+                        <li>精度检查：检查设备的精度</li>
+                    </ul>
+                    
+                    <h2>设备故障处理</h2>
+                    
+                    <h3>设备故障处理的原则</h3>
+                    <ul>
+                        <li>安全第一：确保人身安全</li>
+                        <li>先停后查：先停止设备运行，再进行检查</li>
+                        <li>先外后内：先检查外部因素，再检查内部因素</li>
+                        <li>先简后繁：先检查简单的原因，再检查复杂的原因</li>
+                        <li>先软后硬：先检查软件和参数设置，再检查硬件</li>
+                    </ul>
+                    
+                    <h3>常见设备故障及处理方法</h3>
+                    
+                    <h4>1. 设备无法启动</h4>
+                    <h5>可能原因：</h5>
+                    <ul>
+                        <li>电源故障</li>
+                        <li>开关故障</li>
+                        <li>控制电路故障</li>
+                        <li>电机故障</li>
+                    </ul>
+                    
+                    <h5>处理方法：</h5>
+                    <ul>
+                        <li>检查电源是否正常</li>
+                        <li>检查开关是否损坏</li>
+                        <li>检查控制电路是否有故障</li>
+                        <li>检查电机是否损坏</li>
+                    </ul>
+                    
+                    <h4>2. 设备运行异常</h4>
+                    <h5>可能原因：</h5>
+                    <ul>
+                        <li>润滑不良</li>
+                        <li>部件磨损</li>
+                        <li>参数设置不当</li>
+                        <li>负载过大</li>
+                    </ul>
+                    
+                    <h5>处理方法：</h5>
+                    <ul>
+                        <li>检查润滑系统</li>
+                        <li>检查磨损部件</li>
+                        <li>调整参数设置</li>
+                        <li>减轻负载</li>
+                    </ul>
+                    
+                    <h4>3. 设备异响</h4>
+                    <h5>可能原因：</h5>
+                    <ul>
+                        <li>部件松动</li>
+                        <li>部件磨损</li>
+                        <li>润滑不良</li>
+                        <li>异物进入</li>
+                    </ul>
+                    
+                    <h5>处理方法：</h5>
+                    <ul>
+                        <li>检查并紧固松动部件</li>
+                        <li>检查并更换磨损部件</li>
+                        <li>检查润滑系统</li>
+                        <li>清除异物</li>
+                    </ul>
+                    
+                    <h2>设备操作安全</h2>
+                    
+                    <h3>设备操作安全的重要性</h3>
+                    <ul>
+                        <li>保障操作人员的人身安全</li>
+                        <li>避免设备损坏</li>
+                        <li>防止生产事故</li>
+                        <li>保证生产正常进行</li>
+                    </ul>
+                    
+                    <h3>设备操作安全规范</h3>
+                    <ul>
+                        <li>必须经过专业培训，取得操作资格证书</li>
+                        <li>必须穿戴规定的个人防护用品</li>
+                        <li>必须熟悉设备的安全操作规程</li>
+                        <li>必须检查设备的安全装置是否完好</li>
+                        <li>严禁酒后上岗、疲劳作业</li>
+                        <li>严禁违章操作</li>
+                        <li>严禁在设备运行时进行维护保养</li>
+                        <li>严禁在设备运行时清理设备</li>
+                        <li>严禁在设备运行时打开安全防护罩</li>
+                        <li>发现设备异常应立即停机并报告</li>
+                    </ul>
+                    
+                    <h2>总结</h2>
+                    <p>设备操作技能是生产人员的核心技能，正确操作和维护设备不仅可以提高生产效率，保证产品质量，还可以延长设备使用寿命，降低生产成本。希望大家认真学习并严格执行设备操作规程，共同提高公司的生产水平和经济效益。</p>
+                `
+            }
+        ];
+        
+        // 从URL获取内容ID
+        function getContentIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+        
+        // 获取内容详情
+        function getContentDetail(contentId) {
+            return trainingContent.find(content => content.id === contentId);
+        }
+        
+        // 渲染内容详情
+        function renderContentDetail(content) {
+            if (!content) {
+                // 显示内容不存在提示
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('notFoundState').classList.remove('hidden');
+                document.getElementById('contentDetail').classList.add('hidden');
+                return;
+            }
+            
+            // 更新内容头部
+            document.getElementById('contentTitle').textContent = content.title;
+            document.getElementById('contentCategory').textContent = content.categoryName;
+            document.getElementById('contentDuration').textContent = content.duration;
+            document.getElementById('contentCreatedAt').textContent = content.createdAt;
+            
+            // 设置内容图片
+            const contentImage = document.getElementById('contentImage');
+            contentImage.style.backgroundImage = `url(${content.image})`;
+            contentImage.style.backgroundSize = 'cover';
+            contentImage.style.backgroundPosition = 'center';
+            
+            // 设置内容主体
+            document.getElementById('contentBody').innerHTML = content.content;
+            
+            // 显示内容详情，隐藏加载状态
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('notFoundState').classList.add('hidden');
+            document.getElementById('contentDetail').classList.remove('hidden');
+            
+            // 渲染相关推荐
+            renderRelatedContent(content);
+            
+            // 设置内容导航
+            setContentNavigation(content);
+            
+            // 设置分享链接
+            document.getElementById('shareLink').value = `${window.location.href}`;
+        }
+        
+        // 渲染相关推荐
+        function renderRelatedContent(currentContent) {
+            const relatedContentContainer = document.getElementById('relatedContent');
+            
+            // 清空现有内容
+            relatedContentContainer.innerHTML = '';
+            
+            // 获取相关内容（同分类但不同ID的内容）
+            const relatedContent = trainingContent
+                .filter(content => content.category === currentContent.category && content.id !== currentContent.id)
+                .slice(0, 3); // 最多显示3个相关内容
+            
+            if (relatedContent.length === 0) {
+                relatedContentContainer.innerHTML = '<p class="text-gray-500 col-span-full text-center">暂无相关推荐</p>';
+                return;
+            }
+            
+            // 渲染相关内容卡片
+            relatedContent.forEach(content => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-custom overflow-hidden';
+                
+                card.innerHTML = `
+                    <img src="${content.image}" alt="${content.title}" class="w-full h-32 object-cover">
+                    <div class="p-4">
+                        <span class="inline-block px-2 py-1 bg-primary text-white text-xs font-medium rounded-full mb-2">
+                            ${content.categoryName}
+                        </span>
+                        <h3 class="text-base font-semibold text-gray-800 mb-1 line-clamp-1">${content.title}</h3>
+                        <p class="text-gray-600 text-xs mb-3 line-clamp-2">${content.description}</p>
+                        <a href="learning-detail.html?id=${content.id}" class="block w-full text-center bg-primary hover:bg-green-600 text-white text-sm font-medium py-2 rounded-lg transition-colors">
+                            查看详情
+                        </a>
+                    </div>
+                `;
+                
+                relatedContentContainer.appendChild(card);
+            });
+        }
+        
+        // 设置内容导航
+        function setContentNavigation(currentContent) {
+            const contentList = trainingContent;
+            const currentIndex = contentList.findIndex(content => content.id === currentContent.id);
+            
+            // 上一篇内容
+            const prevContent = document.getElementById('prevContent');
+            const prevContentTitle = document.getElementById('prevContentTitle');
+            
+            if (currentIndex > 0) {
+                const prevItem = contentList[currentIndex - 1];
+                prevContent.href = `learning-detail.html?id=${prevItem.id}`;
+                prevContentTitle.textContent = prevItem.title;
+                prevContent.classList.remove('hidden');
+            } else {
+                prevContent.classList.add('hidden');
+            }
+            
+            // 下一篇内容
+            const nextContent = document.getElementById('nextContent');
+            const nextContentTitle = document.getElementById('nextContentTitle');
+            
+            if (currentIndex < contentList.length - 1) {
+                const nextItem = contentList[currentIndex + 1];
+                nextContent.href = `learning-detail.html?id=${nextItem.id}`;
+                nextContentTitle.textContent = nextItem.title;
+                nextContent.classList.remove('hidden');
+            } else {
+                nextContent.classList.add('hidden');
+            }
+        }
+        
+        // 点赞功能
+        document.getElementById('likeButton').addEventListener('click', function() {
+            const likeCountElement = document.getElementById('likeCount');
+            const likeButton = document.getElementById('likeButton');
+            const icon = likeButton.querySelector('i');
+            
+            if (icon.classList.contains('fa-heart-o')) {
+                // 点赞
+                icon.classList.remove('fa-heart-o');
+                icon.classList.add('fa-heart');
+                likeButton.classList.add('text-red-500');
+                likeCountElement.textContent = parseInt(likeCountElement.textContent) + 1;
+            } else {
+                // 取消点赞
+                icon.classList.remove('fa-heart');
+                icon.classList.add('fa-heart-o');
+                likeButton.classList.remove('text-red-500');
+                likeCountElement.textContent = parseInt(likeCountElement.textContent) - 1;
+            }
+        });
+        
+        // 收藏功能
+        document.getElementById('bookmarkButton').addEventListener('click', function() {
+            const bookmarkButton = document.getElementById('bookmarkButton');
+            const icon = bookmarkButton.querySelector('i');
+            const text = bookmarkButton.querySelector('span');
+            
+            if (icon.classList.contains('fa-bookmark-o')) {
+                // 收藏
+                icon.classList.remove('fa-bookmark-o');
+                icon.classList.add('fa-bookmark');
+                bookmarkButton.classList.add('text-primary');
+                text.textContent = '已收藏';
+                alert('收藏成功！');
+            } else {
+                // 取消收藏
+                icon.classList.remove('fa-bookmark');
+                icon.classList.add('fa-bookmark-o');
+                bookmarkButton.classList.remove('text-primary');
+                text.textContent = '收藏';
+                alert('已取消收藏！');
+            }
+        });
+        
+        // 分享功能
+        document.getElementById('shareButton').addEventListener('click', function() {
+            document.getElementById('shareModal').classList.remove('hidden');
+        });
+        
+        // 关闭分享弹窗
+        document.getElementById('closeShareModal').addEventListener('click', function() {
+            document.getElementById('shareModal').classList.add('hidden');
+        });
+        
+        // 复制分享链接
+        document.getElementById('copyLinkBtn').addEventListener('click', function() {
+            const shareLink = document.getElementById('shareLink');
+            shareLink.select();
+            document.execCommand('copy');
+            
+            alert('链接已复制到剪贴板！');
+        });
+        
+        // 点击弹窗外部关闭弹窗
+        document.getElementById('shareModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            const contentId = getContentIdFromUrl();
+            const content = getContentDetail(contentId) || trainingContent[0]; // 默认显示第一个内容
+            
+            renderContentDetail(content);
+        });
+    </script>
+</body>
+</html>

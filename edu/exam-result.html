@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抽考练习结果 - 职教培训及考试应用</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#22c55e', // 绿色主色调
+                        secondary: '#3b82f6', // 蓝色辅助色
+                        neutral: '#f8fafc', // 白色中性色
+                        dark: '#1e293b', // 深色
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'custom': '0 4px 20px rgba(0, 0, 0, 0.08)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .transition-custom {
+                transition: all 0.3s ease;
+            }
+            .option-correct {
+                background-color: rgba(34, 197, 94, 0.1);
+                border-color: #22c55e;
+            }
+            .option-incorrect {
+                background-color: rgba(239, 68, 68, 0.1);
+                border-color: #ef4444;
+            }
+            .option-neutral {
+                background-color: rgba(59, 130, 246, 0.1);
+                border-color: #3b82f6;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-graduation-cap text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-gray-800">职教培训及考试应用</h1>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <!-- 用户信息 -->
+                <div class="hidden md:flex items-center space-x-2">
+                    <span id="userName" class="text-gray-700">用户名</span>
+                    <span id="userRole" class="px-2 py-1 bg-primary text-white text-xs rounded-full">普通用户</span>
+                </div>
+                
+                <!-- 移动端用户信息 -->
+                <div class="md:hidden">
+                    <button id="mobileUserMenu" class="flex items-center space-x-1 text-gray-700">
+                        <i class="fa fa-user-circle text-xl"></i>
+                        <span id="mobileUserName">用户名</span>
+                    </button>
+                </div>
+                
+                <!-- 返回首页 -->
+                <a href="home.html" class="text-gray-500 hover:text-primary transition-colors">
+                    <i class="fa fa-home text-lg"></i>
+                    <span class="ml-1 hidden md:inline">首页</span>
+                </a>
+                
+                <!-- 退出登录 -->
+                <button id="logoutBtn" class="text-gray-500 hover:text-red-500 transition-colors">
+                    <i class="fa fa-sign-out text-lg"></i>
+                    <span class="ml-1 hidden md:inline">退出</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- 结果概览 -->
+        <section class="mb-8">
+            <div class="bg-white rounded-xl shadow-custom overflow-hidden">
+                <div class="bg-gradient-custom h-24 flex items-center justify-center relative">
+                    <div class="absolute inset-0 bg-gradient-to-r from-primary to-secondary opacity-90"></div>
+                    <div class="text-center z-10">
+                        <h2 class="text-2xl font-bold text-white text-shadow">抽考练习结果</h2>
+                        <p class="text-white opacity-90 mt-1">您的表现非常出色！</p>
+                    </div>
+                </div>
+                
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-gray-50 rounded-lg p-4 text-center">
+                            <p class="text-gray-500 text-sm">考试时间</p>
+                            <p id="examTime" class="text-lg font-semibold text-gray-800">2025-07-21 15:30</p>
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-lg p-4 text-center">
+                            <p class="text-gray-500 text-sm">考试时长</p>
+                            <p id="examDuration" class="text-lg font-semibold text-gray-800">12分钟30秒</p>
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-lg p-4 text-center">
+                            <p class="text-gray-500 text-sm">总题数</p>
+                            <p id="totalQuestions" class="text-lg font-semibold text-gray-800">10题</p>
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-lg p-4 text-center">
+                            <p class="text-gray-500 text-sm">正确率</p>
+                            <p id="correctRate" class="text-lg font-semibold text-primary">90%</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col md:flex-row md:items-center justify-between">
+                        <div class="flex items-center mb-4 md:mb-0">
+                            <div class="w-24 h-24 rounded-full bg-primary flex items-center justify-center text-white text-3xl font-bold mr-4">
+                                <span id="score">90</span>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-800">得分</h3>
+                                <p id="scoreText" class="text-gray-600">优秀</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-4">
+                            <a href="exam-setting.html" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-green-600 transition-colors">
+                                <i class="fa fa-refresh mr-2"></i> 重新抽考
+                            </a>
+                            
+                            <button id="reviewAnswersBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                                <i class="fa fa-list-alt mr-2"></i> 查看答案
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 成绩分析 -->
+        <section class="mb-8">
+            <div class="bg-white rounded-xl shadow-custom p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">成绩分析</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 正确率饼图 -->
+                    <div>
+                        <h4 class="text-base font-medium text-gray-700 mb-3">正确率分布</h4>
+                        <div class="h-64">
+                            <canvas id="correctRateChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- 答题情况 -->
+                    <div>
+                        <h4 class="text-base font-medium text-gray-700 mb-3">答题情况</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-sm text-gray-600">正确</span>
+                                    <span id="correctCount" class="text-sm font-medium text-green-600">9题</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div id="correctProgress" class="bg-green-500 h-2 rounded-full" style="width: 90%"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-sm text-gray-600">错误</span>
+                                    <span id="incorrectCount" class="text-sm font-medium text-red-600">1题</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div id="incorrectProgress" class="bg-red-500 h-2 rounded-full" style="width: 10%"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-sm text-gray-600">未答</span>
+                                    <span id="unansweredCount" class="text-sm font-medium text-gray-600">0题</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div id="unansweredProgress" class="bg-gray-500 h-2 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 答案解析 -->
+        <section id="answerReviewSection" class="hidden">
+            <div class="bg-white rounded-xl shadow-custom p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800">答案解析</h3>
+                    
+                    <div class="flex space-x-2">
+                        <button id="showAllBtn" class="px-3 py-1 bg-primary text-white text-sm rounded-lg hover:bg-green-600 transition-colors">
+                            全部
+                        </button>
+                        <button id="showCorrectBtn" class="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300 transition-colors">
+                            正确
+                        </button>
+                        <button id="showIncorrectBtn" class="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300 transition-colors">
+                            错误
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="answerReviewContent" class="space-y-6">
+                    <!-- 答案解析内容将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white border-t border-gray-200 mt-8">
+        <div class="container mx-auto px-4 py-6">
+            <div class="text-center text-gray-500 text-sm">
+                <p>© 2025 职教培训及考试应用. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 检查登录状态
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        
+        if (!currentUser) {
+            // 如果未登录，跳转到登录页
+            window.location.href = 'index.html';
+        }
+        
+        // 更新用户信息
+        document.getElementById('userName').textContent = currentUser.name;
+        document.getElementById('mobileUserName').textContent = currentUser.name;
+        
+        // 更新用户角色
+        const userRoleElement = document.getElementById('userRole');
+        if (currentUser.role === 'admin') {
+            userRoleElement.textContent = '管理员';
+            userRoleElement.classList.remove('bg-primary');
+            userRoleElement.classList.add('bg-secondary');
+        }
+        
+        // 退出登录
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            }
+        });
+        
+        // 移动端用户菜单
+        document.getElementById('mobileUserMenu').addEventListener('click', function() {
+            alert(`用户名: ${currentUser.name}\n角色: ${currentUser.role === 'admin' ? '管理员' : '普通用户'}`);
+        });
+        
+        // 获取考试结果
+        const examResult = JSON.parse(localStorage.getItem('lastExamResult'));
+        
+        // 检查是否有考试结果
+        if (!examResult) {
+            alert('未找到考试结果，请先完成抽考！');
+            window.location.href = 'exam-setting.html';
+        }
+        
+        // 格式化时间
+        function formatDateTime(dateTimeString) {
+            const date = new Date(dateTimeString);
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+        }
+        
+        // 格式化时长
+        function formatDuration(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}分钟${remainingSeconds}秒`;
+        }
+        
+        // 更新结果概览
+        function updateResultOverview() {
+            document.getElementById('examTime').textContent = formatDateTime(examResult.examTime);
+            document.getElementById('examDuration').textContent = formatDuration(examResult.duration);
+            document.getElementById('totalQuestions').textContent = `${examResult.questionCount}题`;
+            
+            const correctRate = Math.round((examResult.correctCount / examResult.questionCount) * 100);
+            document.getElementById('correctRate').textContent = `${correctRate}%`;
+            document.getElementById('score').textContent = examResult.score;
+            
+            // 设置得分文本
+            const scoreTextElement = document.getElementById('scoreText');
+            if (examResult.score >= 90) {
+                scoreTextElement.textContent = '优秀';
+                scoreTextElement.classList.add('text-green-600');
+            } else if (examResult.score >= 80) {
+                scoreTextElement.textContent = '良好';
+                scoreTextElement.classList.add('text-blue-600');
+            } else if (examResult.score >= 60) {
+                scoreTextElement.textContent = '及格';
+                scoreTextElement.classList.add('text-yellow-600');
+            } else {
+                scoreTextElement.textContent = '不及格';
+                scoreTextElement.classList.add('text-red-600');
+            }
+            
+            // 更新答题情况
+            const incorrectCount = examResult.questionCount - examResult.correctCount;
+            const unansweredCount = examResult.questionResults.filter(result => result.userAnswer === undefined).length;
+            
+            document.getElementById('correctCount').textContent = `${examResult.correctCount}题`;
+            document.getElementById('incorrectCount').textContent = `${incorrectCount}题`;
+            document.getElementById('unansweredCount').textContent = `${unansweredCount}题`;
+            
+            document.getElementById('correctProgress').style.width = `${(examResult.correctCount / examResult.questionCount) * 100}%`;
+            document.getElementById('incorrectProgress').style.width = `${(incorrectCount / examResult.questionCount) * 100}%`;
+            document.getElementById('unansweredProgress').style.width = `${(unansweredCount / examResult.questionCount) * 100}%`;
+        }
+        
+        // 绘制正确率饼图
+        function drawCorrectRateChart() {
+            const incorrectCount = examResult.questionCount - examResult.correctCount;
+            const unansweredCount = examResult.questionResults.filter(result => result.userAnswer === undefined).length;
+            
+            const ctx = document.getElementById('correctRateChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['正确', '错误', '未答'],
+                    datasets: [{
+                        data: [examResult.correctCount, incorrectCount, unansweredCount],
+                        backgroundColor: [
+                            '#22c55e', // 绿色
+                            '#ef4444', // 红色
+                            '#6b7280'  // 灰色
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+        
+        // 渲染答案解析
+        function renderAnswerReview(filter = 'all') {
+            const answerReviewContent = document.getElementById('answerReviewContent');
+            answerReviewContent.innerHTML = '';
+            
+            let filteredResults = examResult.questionResults;
+            
+            // 根据筛选条件过滤题目
+            if (filter === 'correct') {
+                filteredResults = examResult.questionResults.filter(result => result.isCorrect);
+            } else if (filter === 'incorrect') {
+                filteredResults = examResult.questionResults.filter(result => !result.isCorrect);
+            }
+            
+            if (filteredResults.length === 0) {
+                answerReviewContent.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fa fa-info-circle text-4xl mb-2"></i>
+                        <p>暂无符合条件的题目</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 渲染题目
+            filteredResults.forEach((result, index) => {
+                const questionNumber = examResult.questionResults.indexOf(result) + 1;
+                const isCorrect = result.isCorrect;
+                
+                const questionElement = document.createElement('div');
+                questionElement.className = 'border rounded-lg overflow-hidden';
+                
+                // 设置题目头部样式
+                let headerClass = 'p-4';
+                let iconClass = '';
+                let statusText = '';
+                
+                if (isCorrect) {
+                    headerClass += ' bg-green-50 border-b border-green-100';
+                    iconClass = 'fa-check-circle text-green-500';
+                    statusText = '回答正确';
+                } else {
+                    headerClass += ' bg-red-50 border-b border-red-100';
+                    iconClass = 'fa-times-circle text-red-500';
+                    statusText = '回答错误';
+                }
+                
+                questionElement.innerHTML = `
+                    <div class="${headerClass} flex items-center justify-between">
+                        <div class="flex items-center">
+                            <span class="font-medium text-gray-800">${questionNumber}. ${result.question}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fa ${iconClass} mr-1"></i>
+                            <span class="text-sm ${isCorrect ? 'text-green-600' : 'text-red-600'}">${statusText}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 space-y-3">
+                        ${result.options.map((option, optionIndex) => {
+                            let optionClass = 'flex items-center p-3 border rounded-lg';
+                            
+                            if (optionIndex === result.correctAnswer) {
+                                optionClass += ' option-correct';
+                            } else if (optionIndex === result.userAnswer) {
+                                optionClass += ' option-incorrect';
+                            } else {
+                                optionClass += ' option-neutral';
+                            }
+                            
+                            return `
+                                <div class="${optionClass}">
+                                    <span class="font-medium w-6 text-center">${String.fromCharCode(65 + optionIndex)}.</span>
+                                    <span class="ml-2 text-gray-700">${option}</span>
+                                    ${optionIndex === result.correctAnswer ? '<i class="fa fa-check-circle text-green-500 ml-auto"></i>' : ''}
+                                    ${optionIndex === result.userAnswer && optionIndex !== result.correctAnswer ? '<i class="fa fa-times-circle text-red-500 ml-auto"></i>' : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                        
+                        ${!isCorrect ? `
+                            <div class="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                                <h4 class="font-medium text-blue-700 mb-1">解析：</h4>
+                                <p class="text-gray-700">${result.explanation}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                answerReviewContent.appendChild(questionElement);
+            });
+        }
+        
+        // 查看答案按钮点击事件
+        document.getElementById('reviewAnswersBtn').addEventListener('click', function() {
+            const answerReviewSection = document.getElementById('answerReviewSection');
+            
+            if (answerReviewSection.classList.contains('hidden')) {
+                // 显示答案解析
+                answerReviewSection.classList.remove('hidden');
+                this.innerHTML = '<i class="fa fa-chevron-up mr-2"></i> 收起答案';
+                
+                // 渲染答案解析
+                renderAnswerReview('all');
+            } else {
+                // 隐藏答案解析
+                answerReviewSection.classList.add('hidden');
+                this.innerHTML = '<i class="fa fa-list-alt mr-2"></i> 查看答案';
+            }
+        });
+        
+        // 答案筛选按钮点击事件
+        document.getElementById('showAllBtn').addEventListener('click', function() {
+            setActiveFilterButton(this);
+            renderAnswerReview('all');
+        });
+        
+        document.getElementById('showCorrectBtn').addEventListener('click', function() {
+            setActiveFilterButton(this);
+            renderAnswerReview('correct');
+        });
+        
+        document.getElementById('showIncorrectBtn').addEventListener('click', function() {
+            setActiveFilterButton(this);
+            renderAnswerReview('incorrect');
+        });
+        
+        // 设置活跃的筛选按钮
+        function setActiveFilterButton(button) {
+            const buttons = [
+                document.getElementById('showAllBtn'),
+                document.getElementById('showCorrectBtn'),
+                document.getElementById('showIncorrectBtn')
+            ];
+            
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            
+            button.classList.remove('bg-gray-200', 'text-gray-700');
+            button.classList.add('bg-primary', 'text-white');
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 更新结果概览
+            updateResultOverview();
+            
+            // 绘制正确率饼图
+            drawCorrectRateChart();
+        });
+    </script>
+</body>
+</html>

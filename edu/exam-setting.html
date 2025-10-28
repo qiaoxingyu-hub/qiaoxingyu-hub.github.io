@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抽考练习设置 - 职教培训及考试应用</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#22c55e', // 绿色主色调
+                        secondary: '#3b82f6', // 蓝色辅助色
+                        neutral: '#f8fafc', // 白色中性色
+                        dark: '#1e293b', // 深色
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'custom': '0 4px 20px rgba(0, 0, 0, 0.08)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .transition-custom {
+                transition: all 0.3s ease;
+            }
+            .slider-thumb::-webkit-slider-thumb {
+                @apply appearance-none w-6 h-6 rounded-full bg-primary border-2 border-white cursor-pointer shadow-md;
+            }
+            .slider-track {
+                @apply appearance-none h-2 rounded-lg bg-gray-200;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-graduation-cap text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-gray-800">职教教培训及考试应用</h1>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <!-- 用户信息 -->
+                <div class="hidden md:flex items-center space-x-2">
+                    <span id="userName" class="text-gray-700">用户名</span>
+                    <span id="userRole" class="px-2 py-1 bg-primary text-white text-xs rounded-full">普通用户</span>
+                </div>
+                
+                <!-- 移动端用户信息 -->
+                <div class="md:hidden">
+                    <button id="mobileUserMenu" class="flex items-center space-x-1 text-gray-700">
+                        <i class="fa fa-user-circle text-xl"></i>
+                        <span id="mobileUserName">用户名</span>
+                    </button>
+                </div>
+                
+                <!-- 返回首页 -->
+                <a href="home.html" class="text-gray-500 hover:text-primary transition-colors">
+                    <i class="fa fa-home text-lg"></i>
+                    <span class="ml-1 hidden md:inline">首页</span>
+                </a>
+                
+                <!-- 退出登录 -->
+                <button id="logoutBtn" class="text-gray-500 hover:text-red-500 transition-colors">
+                    <i class="fa fa-sign-out text-lg"></i>
+                    <span class="ml-1 hidden md:inline">退出</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- 页面标题 -->
+        <section class="mb-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">抽考练习设置</h2>
+                    <p class="text-gray-600 mt-1">设置抽考题目数量和分类，开始您的练习</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 抽考设置表单 -->
+        <section class="max-w-2xl mx-auto">
+            <div class="bg-white rounded-xl shadow-custom p-6 md:p-8">
+                <form id="examSettingForm">
+                    <!-- 题目数量设置 -->
+                    <div class="mb-6">
+                        <label for="questionCount" class="block text-sm font-medium text-gray-700 mb-2">题目数量</label>
+                        
+                        <div class="flex items-center space-x-4">
+                            <input type="range" id="questionCount" min="5" max="30" step="5" value="10"
+                                class="slider-track slider-thumb flex-1">
+                            
+                            <span id="questionCountValue" class="text-lg font-semibold text-primary w-12 text-center">10</span>
+                        </div>
+                        
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>5题</span>
+                            <span>10题</span>
+                            <span>15题</span>
+                            <span>20题</span>
+                            <span>25题</span>
+                            <span>30题</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 题目分类设置 -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">题目分类</label>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                <input type="checkbox" name="category" value="safety" checked
+                                    class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                <span class="ml-2 text-gray-700">安全知识</span>
+                            </label>
+                            
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                <input type="checkbox" name="category" value="business" checked
+                                    class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                <span class="ml-2 text-gray-700">业务知识</span>
+                            </label>
+                            
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                <input type="checkbox" name="category" value="skill" checked
+                                    class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                <span class="ml-2 text-gray-700">技能操作</span>
+                            </label>
+                            
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                <input type="checkbox" name="category" value="management" checked
+                                    class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                <span class="ml-2 text-gray-700">管理知识</span>
+                            </label>
+                            
+                            <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                <input type="checkbox" name="category" value="quality" checked
+                                    class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                <span class="ml-2 text-gray-700">质量知识</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- 难度设置 -->
+                    <div class="mb-8">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">题目难度</label>
+                        
+                        <div class="flex items-center space-x-2">
+                            <input type="range" id="difficultyLevel" min="1" max="5" step="1" value="3"
+                                class="slider-track slider-thumb flex-1">
+                            
+                            <span id="difficultyLevelValue" class="text-lg font-semibold text-primary w-12 text-center">中等</span>
+                        </div>
+                        
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>简单</span>
+                            <span>较简单</span>
+                            <span>中等</span>
+                            <span>较难</span>
+                            <span>困难</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 开始抽考按钮 -->
+                    <button type="submit" id="startExamBtn"
+                        class="w-full bg-primary hover:bg-green-600 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                        开始抽考
+                    </button>
+                </form>
+            </div>
+            
+            <!-- 抽考说明 -->
+            <div class="bg-white rounded-xl shadow-custom p-6 mt-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">抽考说明</h3>
+                
+                <ul class="space-y-2 text-gray-600">
+                    <li class="flex items-start">
+                        <i class="fa fa-info-circle text-primary mt-1 mr-2"></i>
+                        <span>系统将根据您选择的题目数量和分类，从题库中随机抽取相应数量的题目。</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fa fa-info-circle text-primary mt-1 mr-2"></i>
+                        <span>每个题目均为选择题，包含A、B、C、D四个选项，其中只有一个正确答案。</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fa fa-info-circle text-primary mt-1 mr-2"></i>
+                        <span>答题完成后，系统将自动评分并显示正确答案和解析。</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fa fa-info-circle text-primary mt-1 mr-2"></i>
+                        <span>您可以多次进行抽考练习，提高自己的知识水平。</span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white border-t border-gray-200 mt-8">
+        <div class="container mx-auto px-4 py-6">
+            <div class="text-center text-gray-500 text-sm">
+                <p>© 2025 职教培训及考试应用. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 检查登录状态
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        
+        if (!currentUser) {
+            // 如果未登录，跳转到登录页
+            window.location.href = 'index.html';
+        }
+        
+        // 更新用户信息
+        document.getElementById('userName').textContent = currentUser.name;
+        document.getElementById('mobileUserName').textContent = currentUser.name;
+        
+        // 更新用户角色
+        const userRoleElement = document.getElementById('userRole');
+        if (currentUser.role === 'admin') {
+            userRoleElement.textContent = '管理员';
+            userRoleElement.classList.remove('bg-primary');
+            userRoleElement.classList.add('bg-secondary');
+        }
+        
+        // 退出登录
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            }
+        });
+        
+        // 移动端用户菜单
+        document.getElementById('mobileUserMenu').addEventListener('click', function() {
+            alert(`用户名: ${currentUser.name}\n角色: ${currentUser.role === 'admin' ? '管理员' : '普通用户'}`);
+        });
+        
+        // 题目数量滑块
+        const questionCountSlider = document.getElementById('questionCount');
+        const questionCountValue = document.getElementById('questionCountValue');
+        
+        questionCountSlider.addEventListener('input', function() {
+            questionCountValue.textContent = this.value;
+        });
+        
+        // 难度滑块
+        const difficultyLevelSlider = document.getElementById('difficultyLevel');
+        const difficultyLevelValue = document.getElementById('difficultyLevelValue');
+        const difficultyLabels = ['简单', '较简单', '中等', '较难', '困难'];
+        
+        difficultyLevelSlider.addEventListener('input', function() {
+            const index = parseInt(this.value) - 1;
+            difficultyLevelValue.textContent = difficultyLabels[index];
+        });
+        
+        // 模拟题库数据
+        const questionBank = [
+            // 安全知识
+            {
+                id: 'q1',
+                category: 'safety',
+                categoryName: '安全知识',
+                question: '下列哪项不属于安全生产的基本方针？',
+                options: ['安全第一', '预防为主', '综合治理', '事后追责'],
+                correctAnswer: 3,
+                explanation: '安全生产的基本方针是"安全第一、预防为主、综合治理"，不包括"事后追责"。',
+                difficulty: 1
+            },
+            {
+                id: 'q2',
+                category: 'safety',
+                categoryName: '安全知识',
+                question: '发生火灾时，下列哪种逃生方法是正确的？',
+                options: ['乘坐电梯逃生', '用湿毛巾捂住口鼻，低姿前行', '跳楼逃生', '原路返回'],
+                correctAnswer: 1,
+                explanation: '发生火灾时，应使用湿毛巾捂住口鼻，低姿前行，避免吸入有毒烟雾。',
+                difficulty: 1
+            },
+            {
+                id: 'q3',
+                category: 'safety',
+                categoryName: '安全知识',
+                question: '下列哪种灭火器适用于扑灭电器火灾？',
+                options: ['泡沫灭火器', '二氧化碳灭火器', '水型灭火器', '以上都可以'],
+                correctAnswer: 1,
+                explanation: '二氧化碳灭火器适用于扑灭电器火灾，因为它不会导电，不会对电器造成损坏。',
+                difficulty: 2
+            },
+            {
+                id: 'q4',
+                category: 'safety',
+                categoryName: '安全知识',
+                question: '在高处作业时，下列哪项防护措施是必须的？',
+                options: ['戴安全帽', '系安全带', '穿防滑鞋', '以上都是'],
+                correctAnswer: 3,
+                explanation: '在高处作业时，戴安全帽、系安全带和穿防滑鞋都是必须的防护措施。',
+                difficulty: 2
+            },
+            {
+                id: 'q5',
+                category: 'safety',
+                categoryName: '安全知识',
+                question: '下列哪项不属于电气安全隐患？',
+                options: ['电线老化', '插座过载', '使用绝缘良好的工具', '设备接地不良'],
+                correctAnswer: 2,
+                explanation: '使用绝缘良好的工具是正确的安全做法，不属于安全隐患。',
+                difficulty: 2
+            },
+            {
+                id: 'q6',
+                category: 'safety',
+                categoryName: '安全知识',
+                question: '在发生化学品泄漏事故时，下列哪项措施是错误的？',
+                options: ['立即撤离现场', '使用防护设备', '用水冲洗泄漏物', '向上风向撤离'],
+                correctAnswer: 2,
+                explanation: '用水冲洗泄漏物可能会导致化学品扩散或产生危险反应，应根据化学品特性采取适当措施。',
+                difficulty: 3
+            },
+            {
+                id: 'q7',
+                category: 'safety',
+                categoryName: '安全知识',
+                question: '下列哪项不属于职业病？',
+                options: ['尘肺病', '职业性皮肤病', '感冒', '职业性耳聋'],
+                correctAnswer: 2,
+                explanation: '感冒是常见疾病，不属于职业病范畴。',
+                difficulty: 1
+            },
+            {
+                id: 'q8',
+                category: 'safety',
+                categoryName: '安全知识',
+                question: '在进行动火作业前，下列哪项措施是不必要的？',
+                options: ['清理作业现场', '办理动火作业许可证', '准备灭火器材', '关闭所有电源'],
+                correctAnswer: 3,
+                explanation: '在进行动火作业前，不需要关闭所有电源，只需确保作业区域的安全即可。',
+                difficulty: 3
+            },
+            {
+                id: 'q9',
+                category: 'safety',
+                categoryName: '安全知识',
+                question: '下列哪项不属于安全生产责任制的内容？',
+                options: ['明确各岗位的安全职责', '制定安全管理制度', '定期进行安全检查', '追究事故责任'],
+                correctAnswer: 3,
+                explanation: '追究事故责任是事故发生后的处理措施，不属于安全生产责任制的内容。',
+                difficulty: 3
+            },
+            {
+                id: 'q10',
+                category: 'safety',
+                categoryName: '安全知识',
+                question: '在使用特种设备时，下列哪项是错误的？',
+                options: ['定期进行维护保养', '使用未经检验合格的设备', '操作人员持证上岗', '遵守操作规程'],
+                correctAnswer: 1,
+                explanation: '严禁使用未经检验合格的特种设备，这是严重的安全违规行为。',
+                difficulty: 2
+            },
+            
+            // 业务知识
+            {
+                id: 'q11',
+                category: 'business',
+                categoryName: '业务知识',
+                question: '下列哪项不属于客户开发流程的环节？',
+                options: ['潜在客户识别', '需求分析', '方案提供', '售后服务'],
+                correctAnswer: 3,
+                explanation: '售后服务属于客户关系维护阶段，不属于客户开发流程。',
+                difficulty: 2
+            },
+            {
+                id: 'q12',
+                category: 'business',
+                categoryName: '业务知识',
+                question: '在订单处理流程中，下列哪项是第一步？',
+                options: ['订单确认', '订单接收', '信用审核', '生产安排'],
+                correctAnswer: 1,
+                explanation: '订单处理流程的第一步是订单接收，然后才是订单确认、信用审核等环节。',
+                difficulty: 1
+            },
+            {
+                id: 'q13',
+                category: 'business',
+                categoryName: '业务知识',
+                question: '下列哪项不属于客户信息管理的要求？',
+                options: ['信息准确完整', '信息及时更新', '信息公开透明', '信息保密'],
+                correctAnswer: 2,
+                explanation: '客户信息应保密，不应公开透明，这是客户信息管理的基本要求。',
+                difficulty: 2
+            },
+            {
+                id: 'q14',
+                category: 'business',
+                categoryName: '业务知识',
+                question: '在产品报价时，下列哪项是不必要的？',
+                options: ['基于公司定价政策', '包含所有相关费用', '有有效期', '提供成本明细'],
+                correctAnswer: 3,
+                explanation: '在产品报价时，不需要提供成本明细，只需提供最终价格和相关费用即可。',
+                difficulty: 3
+            },
+            {
+                id: 'q15',
+                category: 'business',
+                categoryName: '业务知识',
+                question: '下列哪项不属于合同管理的规范要求？',
+                options: ['使用公司标准模板', '条款明确无歧义', '由授权人员签署', '口头约定即可'],
+                correctAnswer: 3,
+                explanation: '合同必须以书面形式签订，口头约定不具有法律效力，不属于合同管理的规范要求。',
+                difficulty: 2
+            },
+            
+            // 技能操作
+            {
+                id: 'q16',
+                category: 'skill',
+                categoryName: '技能操作',
+                question: '在数控机床操作中，下列哪项是开机前必须检查的？',
+                options: ['电源', '气源', '润滑系统', '以上都是'],
+                correctAnswer: 3,
+                explanation: '在数控机床操作中，开机前必须检查电源、气源和润滑系统等。',
+                difficulty: 2
+            },
+            {
+                id: 'q17',
+                category: 'skill',
+                categoryName: '技能操作',
+                question: '注塑机操作中，下列哪项参数不需要设置？',
+                options: ['注射速度', '注射压力', '保压时间', '模具温度'],
+                correctAnswer: 3,
+                explanation: '模具温度需要控制，但通常是通过模具温度控制器进行设置，而不是在注塑机操作界面设置。',
+                difficulty: 3
+            },
+            {
+                id: 'q18',
+                category: 'skill',
+                categoryName: '技能操作',
+                question: '在焊接操作中，下列哪项防护措施是不必要的？',
+                options: ['戴焊接面罩', '戴防护手套', '穿防静电服', '戴耳塞'],
+                correctAnswer: 2,
+                explanation: '在焊接操作中，穿防静电服不是必要的防护措施，而焊接面罩、防护手套和耳塞都是必要的。',
+                difficulty: 3
+            },
+            {
+                id: 'q19',
+                category: 'skill',
+                categoryName: '技能操作',
+                question: '设备维护保养中，下列哪项不属于日常维护保养的内容？',
+                options: ['设备清洁', '润滑', '易损件更换', '紧固'],
+                correctAnswer: 2,
+                explanation: '易损件更换属于定期维护保养或预防性维护保养的内容，不属于日常维护保养。',
+                difficulty: 2
+            },
+            {
+                id: 'q20',
+                category: 'skill',
+                categoryName: '技能操作',
+                question: '在设备故障处理中，下列哪项原则是错误的？',
+                options: ['安全第一', '先停后查', '先内后外', '先简后繁'],
+                correctAnswer: 2,
+                explanation: '在设备故障处理中，应遵循"先外后内"的原则，先检查外部因素，再检查内部因素。',
+                difficulty: 3
+            },
+            
+            // 管理知识
+            {
+                id: 'q21',
+                category: 'management',
+                categoryName: '管理知识',
+                question: '下列哪项不属于团队管理的基本要素？',
+                options: ['明确目标', '合理分工', '严格控制', '有效沟通'],
+                correctAnswer: 2,
+                explanation: '团队管理的基本要素包括明确目标、合理分工和有效沟通，严格控制不属于基本要素。',
+                difficulty: 2
+            },
+            {
+                id: 'q22',
+                category: 'management',
+                categoryName: '管理知识',
+                question: '在项目管理中，下列哪项不属于项目计划的内容？',
+                options: ['项目范围', '项目进度', '项目预算', '项目验收'],
+                correctAnswer: 3,
+                explanation: '项目验收是项目结束阶段的工作，不属于项目计划的内容。',
+                difficulty: 2
+            },
+            {
+                id: 'q23',
+                category: 'management',
+                categoryName: '管理知识',
+                question: '下列哪项不属于绩效考核的方法？',
+                options: ['KPI考核', '360度评价', '民主评议', '自由评价'],
+                correctAnswer: 3,
+                explanation: '自由评价不属于正式的绩效考核方法，而KPI考核、360度评价和民主评议都是常用的绩效考核方法。',
+                difficulty: 2
+            },
+            {
+                id: 'q24',
+                category: 'management',
+                categoryName: '管理知识',
+                question: '在质量管理中，下列哪项不属于PDCA循环的内容？',
+                options: ['计划', '执行', '检查', '改进', '评估'],
+                correctAnswer: 4,
+                explanation: 'PDCA循环包括计划(Plan)、执行(Do)、检查(Check)和改进(Action)，不包括评估。',
+                difficulty: 3
+            },
+            {
+                id: 'q25',
+                category: 'management',
+                categoryName: '管理知识',
+                question: '下列哪项不属于沟通技巧？',
+                options: ['积极倾听', '清晰表达', '换位思考', '命令式语言'],
+                correctAnswer: 3,
+                explanation: '命令式语言不属于有效的沟通技巧，而积极倾听、清晰表达和换位思考都是有效的沟通技巧。',
+                difficulty: 1
+            },
+            
+            // 质量知识
+            {
+                id: 'q26',
+                category: 'quality',
+                categoryName: '质量知识',
+                question: '下列哪项不属于质量管理体系的原则？',
+                options: ['以顾客为关注焦点', '领导作用', '全员参与', '利润最大化'],
+                correctAnswer: 3,
+                explanation: '利润最大化不属于质量管理体系的原则，而以顾客为关注焦点、领导作用和全员参与都是质量管理体系的基本原则。',
+                difficulty: 2
+            },
+            {
+                id: 'q27',
+                category: 'quality',
+                categoryName: '质量知识',
+                question: '在质量控制中，下列哪项不属于检验类型？',
+                options: ['进货检验', '过程检验', '成品检验', '随机检验'],
+                correctAnswer: 3,
+                explanation: '随机检验不属于正式的检验类型，而进货检验、过程检验和成品检验都是常用的检验类型。',
+                difficulty: 2
+            },
+            {
+                id: 'q28',
+                category: 'quality',
+                categoryName: '质量知识',
+                question: '下列哪项不属于质量成本？',
+                options: ['预防成本', '鉴定成本', '内部损失成本', '生产成本'],
+                correctAnswer: 3,
+                explanation: '生产成本不属于质量成本的范畴，而预防成本、鉴定成本和内部损失成本都是质量成本的组成部分。',
+                difficulty: 3
+            },
+            {
+                id: 'q29',
+                category: 'quality',
+                categoryName: '质量知识',
+                question: '在质量改进中，下列哪项不属于常用的质量工具？',
+                options: ['鱼骨图', '直方图', '控制图', '流程图'],
+                correctAnswer: 3,
+                explanation: '流程图不属于常用的质量工具，而鱼骨图、直方图和控制图都是常用的质量工具。',
+                difficulty: 3
+            },
+            {
+                id: 'q30',
+                category: 'quality',
+                categoryName: '质量知识',
+                question: '下列哪项不属于ISO 9001质量管理体系的要求？',
+                options: ['文件控制', '记录控制', '内部审核', '产品销售'],
+                correctAnswer: 3,
+                explanation: '产品销售不属于ISO 9001质量管理体系的要求，而文件控制、记录控制和内部审核都是ISO 9001的要求。',
+                difficulty: 3
+            }
+        ];
+        
+        // 保存题库数据到localStorage
+        localStorage.setItem('questionBank', JSON.stringify(questionBank));
+        
+        // 抽考设置表单处理
+        document.getElementById('examSettingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // 获取题目数量
+            const questionCount = parseInt(document.getElementById('questionCount').value);
+            
+            // 获取选中的分类
+            const selectedCategories = Array.from(document.querySelectorAll('input[name="category"]:checked'))
+                .map(checkbox => checkbox.value);
+            
+            if (selectedCategories.length === 0) {
+                alert('请至少选择一个题目分类！');
+                return;
+            }
+            
+            // 获取难度级别
+            const difficultyLevel = parseInt(document.getElementById('difficultyLevel').value);
+            
+            // 根据设置筛选题目
+            let filteredQuestions = questionBank.filter(question => 
+                selectedCategories.includes(question.category) && 
+                Math.abs(question.difficulty - difficultyLevel) <= 1 // 允许难度上下浮动1级
+            );
+            
+            if (filteredQuestions.length < questionCount) {
+                alert(`所选条件下只有 ${filteredQuestions.length} 道题目，无法满足 ${questionCount} 道题目的抽考要求！`);
+                return;
+            }
+            
+            // 随机抽取题目
+            const shuffledQuestions = filteredQuestions.sort(() => 0.5 - Math.random());
+            const selectedQuestions = shuffledQuestions.slice(0, questionCount);
+            
+            // 保存抽考设置和题目到localStorage
+            const examSettings = {
+                questionCount,
+                selectedCategories,
+                difficultyLevel,
+                startTime: new Date().getTime()
+            };
+            
+            localStorage.setItem('examSettings', JSON.stringify(examSettings));
+            localStorage.setItem('currentExamQuestions', JSON.stringify(selectedQuestions));
+            localStorage.setItem('userAnswers', JSON.stringify([])); // 初始化用户答案数组
+            
+            // 跳转到答题页面
+            window.location.href = 'exam-question.html';
+        });
+    </script>
+</body>
+</html>
