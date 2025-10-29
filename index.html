@@ -1,2019 +1,625 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>米小兜AI助手</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    :root {
-      --primary: #10a37f;
-      --primary-light: #1abc9c;
-      --primary-dark: #0d8c6c;
-      --secondary: #3498db;
-      --bg-light: #f7f7f8;
-      --bg-white: #ffffff;
-      --bg-panel: #f9f9f9;
-      --text-primary: #1f2937;
-      --text-secondary: #6b7280;
-      --text-muted: #9ca3af;
-      --border-color: #e5e7eb;
-      --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      --radius: 8px;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
-      background-color: var(--bg-light);
-      color: var(--text-primary);
-      line-height: 1.5;
-      overflow-x: hidden;
-      height: 100vh;
-    }
-
-    .app-container {
-      display: flex;
-      height: 100vh;
-      max-width: 100%;
-      overflow: hidden;
-    }
-
-    /* 左侧边栏样式 */
-    .sidebar {
-      width: 260px;
-      background-color: var(--bg-white);
-      border-right: 1px solid var(--border-color);
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.3s ease;
-      z-index: 100;
-    }
-
-    .sidebar-header {
-      padding: 16px;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .new-chat-btn {
-      width: 100%;
-      padding: 12px;
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      border-radius: var(--radius);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: background-color 0.2s;
-      font-weight: 500;
-    }
-
-    .new-chat-btn:hover {
-      background-color: var(--primary-dark);
-    }
-
-    .history-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px;
-    }
-
-    .history-item {
-      padding: 12px;
-      border-radius: var(--radius);
-      cursor: pointer;
-      margin-bottom: 4px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      transition: background-color 0.2s;
-    }
-
-    .history-item:hover {
-      background-color: var(--bg-light);
-    }
-
-    .history-item.active {
-      background-color: rgba(16, 163, 127, 0.1);
-      color: var(--primary);
-    }
-
-    .sidebar-footer {
-      padding: 16px;
-      border-top: 1px solid var(--border-color);
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      text-align: center;
-    }
-
-    /* 主内容区域 */
-    .main-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background-color: var(--bg-white);
-      position: relative;
-    }
-
-    .chat-header {
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background-color: var(--bg-white);
-    }
-
-    .mobile-menu-btn {
-      display: none;
-      background: none;
-      border: none;
-      color: var(--text-primary);
-      font-size: 1.2rem;
-      cursor: pointer;
-    }
-
-    .chat-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-    }
-
-    .chat-container {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      background-color: var(--bg-white);
-    }
-
-    .message {
-      padding: 24px 0;
-    }
-
-    .message-user {
-      background-color: var(--bg-white);
-    }
-
-    .message-ai {
-      background-color: var(--bg-white);
-    }
-
-    .message-content {
-      max-width: 768px;
-      margin: 0 auto;
-      display: flex;
-      gap: 16px;
-    }
-
-    .avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-
-    .avatar-user {
-      background-color: var(--secondary);
-      color: white;
-    }
-
-    .avatar-ai {
-      background-color: #ff9f43;
-      color: white;
-    }
-
-    .avatar-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .message-text {
-      flex: 1;
-      padding-top: 4px;
-    }
-
-    .message-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    .action-btn {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 0.8rem;
-      transition: color 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .action-btn:hover {
-      color: var(--primary);
-    }
-
-    /* 输入区域 */
-    .input-container {
-      padding: 16px 24px;
-      position: relative;
-      max-width: 768px;
-      margin: 0 auto;
-      width: 100%;
-      border-top: 1px solid var(--border-color);
-      background-color: var(--bg-white);
-    }
-
-    .input-box {
-      position: relative;
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      background-color: var(--bg-white);
-      box-shadow: var(--shadow);
-    }
-
-    .input-options {
-      display: flex;
-      padding: 8px 12px;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .option-btn {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 0.8rem;
-      padding: 4px 8px;
-      border-radius: 4px;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .option-btn.active {
-      background-color: rgba(16, 163, 127, 0.1);
-      color: var(--primary);
-    }
-
-    .option-btn:hover {
-      background-color: var(--bg-light);
-    }
-
-    .input-area {
-      display: flex;
-      padding: 12px;
-    }
-
-    #userInput {
-      flex: 1;
-      background: none;
-      border: none;
-      color: var(--text-primary);
-      font-size: 1rem;
-      resize: none;
-      outline: none;
-      max-height: 200px;
-      min-height: 24px;
-      line-height: 1.5;
-    }
-
-    #userInput::placeholder {
-      color: var(--text-muted);
-    }
-
-    .send-btn {
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      width: 32px;
-      height: 32px;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: background-color 0.2s;
-      align-self: flex-end;
-      margin-left: 12px;
-    }
-
-    .send-btn:hover {
-      background-color: var(--primary-light);
-    }
-
-    .send-btn:disabled {
-      background-color: var(--text-muted);
-      cursor: not-allowed;
-    }
-
-    .input-footer {
-      display: flex;
-      justify-content: center;
-      padding: 8px;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-
-    .voice-status {
-      text-align: center;
-      margin: 8px 0;
-      color: var(--primary);
-      font-size: 0.8rem;
-      min-height: 20px;
-    }
-
-    /* 右侧应用栏 */
-    .apps-sidebar {
-      width: 220px;
-      background-color: var(--bg-white);
-      border-left: 1px solid var(--border-color);
-      display: flex;
-      flex-direction: column;
-      padding: 16px;
-      overflow-y: auto;
-    }
-
-    .apps-header {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 16px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border-color);
-      color: var(--text-primary);
-    }
-
-    .app-card {
-      background-color: var(--bg-light);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 16px;
-      transition: all 0.2s;
-      border: 1px solid var(--border-color);
-    }
-
-    .app-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .app-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 12px;
-      font-size: 1.2rem;
-    }
-
-    .edu-app .app-icon {
-      background-color: #3498db;
-      color: white;
-    }
-
-    .knowledge-app .app-icon {
-      background-color: #9b59b6;
-      color: white;
-    }
-
-    .app-title {
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: var(--text-primary);
-    }
-
-    .app-description {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      margin-bottom: 12px;
-    }
-
-    .app-btn {
-      width: 100%;
-      padding: 8px;
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      transition: background-color 0.2s;
-    }
-
-    .app-btn:hover {
-      background-color: var(--primary-dark);
-    }
-
-    /* 知识库模态框 */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal-content {
-      background-color: var(--bg-white);
-      border-radius: var(--radius);
-      width: 90%;
-      max-width: 800px;
-      max-height: 90vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    }
-
-    .modal-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .modal-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-    }
-
-    .close-btn {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: var(--text-muted);
-    }
-
-    .modal-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-    }
-
-    .knowledge-manager {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .knowledge-section {
-      background-color: var(--bg-light);
-      border-radius: var(--radius);
-      padding: 16px;
-    }
-
-    .section-title {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: var(--text-primary);
-    }
-
-    .knowledge-input {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      resize: vertical;
-      min-height: 100px;
-      font-family: inherit;
-    }
-
-    .knowledge-tags {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      margin-top: 10px;
-    }
-
-    .add-knowledge-btn {
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: var(--radius);
-      cursor: pointer;
-      margin-top: 10px;
-      transition: background-color 0.2s;
-    }
-
-    .add-knowledge-btn:hover {
-      background-color: var(--primary-dark);
-    }
-
-    .knowledge-list {
-      margin-top: 16px;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    .knowledge-item {
-      background-color: var(--bg-white);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      padding: 12px;
-      margin-bottom: 10px;
-    }
-
-    .knowledge-content {
-      margin-bottom: 8px;
-    }
-
-    .knowledge-meta {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .search-knowledge {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      margin-bottom: 10px;
-    }
-
-    /* 工作记录专用样式 */
-    .work-record-form {
-      background-color: var(--bg-light);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 20px;
-    }
-
-    .form-group {
-      margin-bottom: 12px;
-    }
-
-    .form-label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 500;
-      color: var(--text-primary);
-    }
-
-    .form-input, .form-textarea, .form-select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      font-family: inherit;
-      font-size: 0.9rem;
-    }
-
-    .form-textarea {
-      min-height: 80px;
-      resize: vertical;
-    }
-
-    .form-row {
-      display: flex;
-      gap: 12px;
-    }
-
-    .form-row .form-group {
-      flex: 1;
-    }
-
-    .work-record-item {
-      background-color: var(--bg-white);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 12px;
-      position: relative;
-    }
-
-    .work-record-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 8px;
-    }
-
-    .work-record-title {
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-bottom: 4px;
-    }
-
-    .work-record-meta {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    .work-record-content {
-      margin: 8px 0;
-      line-height: 1.5;
-    }
-
-    .work-record-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 8px;
-    }
-
-    .work-tag {
-      background-color: rgba(16, 163, 127, 0.1);
-      color: var(--primary);
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 0.75rem;
-    }
-
-    .work-record-actions {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      display: flex;
-      gap: 8px;
-    }
-
-    .record-action-btn {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 0.8rem;
-    }
-
-    .record-action-btn:hover {
-      color: var(--primary);
-    }
-
-    .summary-section {
-      background-color: var(--bg-light);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-top: 20px;
-    }
-
-    .summary-btn {
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: var(--radius);
-      cursor: pointer;
-      margin-top: 10px;
-      transition: background-color 0.2s;
-      width: 100%;
-    }
-
-    .summary-btn:hover {
-      background-color: var(--primary-dark);
-    }
-
-    .summary-result {
-      margin-top: 16px;
-      padding: 12px;
-      background-color: var(--bg-white);
-      border-radius: var(--radius);
-      border: 1px solid var(--border-color);
-    }
-
-    /* 移动端优化 */
-    @media (max-width: 1024px) {
-      .apps-sidebar {
-        display: none;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .sidebar {
-        position: absolute;
-        height: 100%;
-        transform: translateX(-100%);
-      }
-      
-      .sidebar.open {
-        transform: translateX(0);
-      }
-      
-      .mobile-menu-btn {
-        display: block;
-      }
-      
-      .message-content {
-        padding: 0 16px;
-      }
-      
-      .input-container {
-        padding: 12px;
-      }
-      
-      .chat-header {
-        padding: 12px;
-      }
-      
-      .modal-content {
-        width: 95%;
-        height: 95%;
-      }
-    }
-
-    /* 加载动画 */
-    .typing-indicator {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .typing-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background-color: var(--text-muted);
-      animation: typing 1.4s infinite ease-in-out;
-    }
-
-    .typing-dot:nth-child(1) {
-      animation-delay: -0.32s;
-    }
-
-    .typing-dot:nth-child(2) {
-      animation-delay: -0.16s;
-    }
-
-    @keyframes typing {
-      0%, 80%, 100% {
-        transform: scale(0.8);
-        opacity: 0.5;
-      }
-      40% {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-
-    /* 语音按钮 */
-    .voice-btn {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 1.2rem;
-      padding: 8px;
-      border-radius: 4px;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .voice-btn:hover {
-      background-color: var(--bg-light);
-      color: var(--primary);
-    }
-
-    .voice-btn.listening {
-      color: #e74c3c;
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0% {
-        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4);
-      }
-      70% {
-        box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
-      }
-      100% {
-        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生日快乐宝贝生日快乐！</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- GSAP 动画库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- 自定义 Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF6B8B',
+                        secondary: '#6BCEFF',
+                        accent: '#FFD166',
+                        success: '#06D6A0',
+                        info: '#118AB2',
+                        warning: '#FFD166',
+                        danger: '#EF476F',
+                        light: '#F8F9FA',
+                        dark: '#212529'
+                    },
+                    fontFamily: {
+                        sans: ['Comic Sans MS', 'Arial', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            }
+            .text-shadow-lg {
+                text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+            }
+            .bg-gradient-birthday {
+                background: linear-gradient(135deg, #FF6B8B 0%, #6BCEFF 100%);
+            }
+            .balloon {
+                position: absolute;
+                border-radius: 50%;
+                opacity: 0.8;
+                animation: float 6s infinite ease-in-out;
+            }
+            .confetti {
+                position: absolute;
+                width: 10px;
+                height: 10px;
+                opacity: 0;
+                animation: confetti-fall 5s infinite ease-in-out;
+            }
+            @keyframes confetti-fall {
+                0% {
+                    transform: translateY(-100vh) rotate(0deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(100vh) rotate(720deg);
+                    opacity: 0;
+                }
+            }
+        }
+    </style>
 </head>
-<body>
-  <div class="app-container">
-    <!-- 左侧边栏 -->
-    <div class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <button class="new-chat-btn" id="newChatBtn">
-          <i class="fas fa-plus"></i>
-          新对话
-        </button>
-      </div>
-      <div class="history-list" id="historyList">
-        <!-- 对话历史将在这里动态生成 -->
-      </div>
-      <div class="sidebar-footer">
-        <p>米小兜AI助手 v1.0</p>
-      </div>
-    </div>
-
-    <!-- 主内容区域 -->
-    <div class="main-content">
-      <div class="chat-header">
-        <button class="mobile-menu-btn" id="mobileMenuBtn">
-          <i class="fas fa-bars"></i>
-        </button>
-        <div class="chat-title" id="chatTitle">新对话</div>
-        <div></div> <!-- 占位元素 -->
-      </div>
-
-      <div class="chat-container" id="chatContainer">
-        <!-- 欢迎消息 -->
-        <div class="message message-ai">
-          <div class="message-content">
-            <div class="avatar avatar-ai">
-              <i class="fas fa-child"></i>
-            </div>
-            <div class="message-text">
-              <p>你好！我是米小兜，你的AI小伙伴，很高兴为你服务！</p>
-              <p>我可以帮助你：</p>
-              <ul>
-                <li>回答各种问题</li>
-                <li>使用语音输入（点击麦克风图标）</li>
-                <li>开启深度思考模式获得更详细的回答</li>
-                <li>开启联网搜索获取最新信息</li>
-                <li>访问右侧的应用中心使用更多功能</li>
-              </ul>
-              <div class="message-actions">
-                <button class="action-btn" onclick="copyToClipboard(this)">
-                  <i class="far fa-copy"></i> 复制
+<body class="bg-pink-50 overflow-x-hidden min-h-screen">
+    <!-- 顶部装饰 -->
+    <div class="fixed top-0 left-0 right-0 h-20 bg-gradient-birthday z-10 shadow-md"></div>
+    
+    <!-- 主要内容容器 -->
+    <div class="container mx-auto px-4 pt-24 pb-16 relative z-10">
+        <!-- 标题区 -->
+        <header class="text-center mb-10">
+            <h1 class="text-5xl md:text-6xl font-bold text-white text-shadow-lg mb-4 animate-float">
+                🎉 生日快乐！🎉
+            </h1>
+            <p class="text-xl md:text-2xl text-pink-800 font-medium">
+                愿这一天充满欢笑和惊喜！
+            </p>
+        </header>
+        
+        <!-- 照片展示区 -->
+        <section class="bg-white rounded-2xl shadow-xl p-6 mb-10">
+            <h2 class="text-2xl font-bold text-pink-600 mb-6 text-center">
+                <i class="fa fa-camera mr-2"></i>美好回忆
+            </h2>
+            
+            <!-- 照片轮播 -->
+            <div class="relative overflow-hidden rounded-xl">
+                <div id="photoCarousel" class="flex transition-transform duration-500 ease-in-out">
+                    <!-- 照片将通过 JavaScript 动态添加 -->
+                </div>
+                
+                <!-- 轮播控制按钮 -->
+                <button id="prevBtn" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-md z-10">
+                    <i class="fa fa-chevron-left text-pink-600"></i>
                 </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 语音状态显示 -->
-      <div class="voice-status" id="voiceStatus"></div>
-
-      <!-- 输入区域 -->
-      <div class="input-container">
-        <div class="input-box">
-          <div class="input-options">
-            <button class="option-btn" id="deepThinkingBtn">
-              <i class="fas fa-brain"></i> 深度思考
-            </button>
-            <button class="option-btn" id="webSearchBtn">
-              <i class="fas fa-search"></i> 联网搜索
-            </button>
-          </div>
-          <div class="input-area">
-            <textarea id="userInput" placeholder="输入你的问题..." rows="1"></textarea>
-            <button class="voice-btn" id="voiceButton">
-              <i class="fas fa-microphone"></i>
-            </button>
-            <button class="send-btn" id="sendButton">
-              <i class="fas fa-paper-plane"></i>
-            </button>
-          </div>
-        </div>
-        <div class="input-footer">
-          <p>米小兜可以犯错，请核实重要信息</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 右侧应用栏 -->
-    <div class="apps-sidebar">
-      <div class="apps-header">应用中心</div>
-      
-      <!-- 职教培训应用 -->
-      <div class="app-card edu-app">
-        <div class="app-icon">
-          <i class="fas fa-graduation-cap"></i>
-        </div>
-        <div class="app-title">职教培训</div>
-        <div class="app-description">
-          访问职业教育培训资源，学习专业技能和知识
-        </div>
-        <button class="app-btn" onclick="window.open('edu/index.html', '_blank')">
-          打开应用
-        </button>
-      </div>
-      
-      <!-- 知识库应用 -->
-      <div class="app-card knowledge-app">
-        <div class="app-icon">
-          <i class="fas fa-database"></i>
-        </div>
-        <div class="app-title">知识库</div>
-        <div class="app-description">
-          管理你的个人知识库，让AI学习你的专业知识
-        </div>
-        <button class="app-btn" id="knowledgeBaseBtn">
-          打开知识库
-        </button>
-      </div>
-      
-      <!-- 留白区域，用于未来添加更多应用 -->
-      <div style="margin-top: 20px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
-        <p>更多应用即将上线</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- 知识库模态框 -->
-  <div class="modal" id="knowledgeModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title">我的知识库 & 工作记录</div>
-        <button class="close-btn" id="closeKnowledgeModal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="knowledge-manager">
-          <!-- 添加知识部分 -->
-          <div class="knowledge-section">
-            <div class="section-title">添加新知识</div>
-            <textarea class="knowledge-input" id="knowledgeInput" placeholder="输入你想让AI学习的内容..."></textarea>
-            <input type="text" class="knowledge-tags" id="knowledgeTags" placeholder="标签（用逗号分隔）">
-            <button class="add-knowledge-btn" id="addKnowledgeBtn">添加到知识库</button>
-          </div>
-          
-          <!-- 工作记录部分 -->
-          <div class="knowledge-section">
-            <div class="section-title">工作记录</div>
-            <div class="work-record-form">
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">任务名称</label>
-                  <input type="text" class="form-input" id="workTaskName" placeholder="例如：完成项目A的前端开发">
+                <button id="nextBtn" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-md z-10">
+                    <i class="fa fa-chevron-right text-pink-600"></i>
+                </button>
+                
+                <!-- 轮播指示器 -->
+                <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+                    <!-- 指示器将通过 JavaScript 动态添加 -->
                 </div>
-                <div class="form-group">
-                  <label class="form-label">项目名称</label>
-                  <input type="text" class="form-input" id="workProjectName" placeholder="例如：AI助手项目">
-                </div>
-              </div>
-              
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">开始日期</label>
-                  <input type="date" class="form-input" id="workStartDate">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">完成日期</label>
-                  <input type="date" class="form-input" id="workEndDate">
-                </div>
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">工作内容描述</label>
-                <textarea class="form-textarea" id="workDescription" placeholder="详细描述完成的工作内容、使用的技术、解决的问题等..."></textarea>
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">成果与亮点</label>
-                <textarea class="form-textarea" id="workAchievements" placeholder="描述工作成果、达成的目标、获得的认可等..."></textarea>
-              </div>
-              
-              <div class="form-group">
-                <label class="form-label">技能标签</label>
-                <input type="text" class="form-input" id="workSkills" placeholder="例如：React,Node.js,项目管理,团队协作">
-              </div>
-              
-              <button class="add-knowledge-btn" id="addWorkRecordBtn">添加工作记录</button>
             </div>
             
-            <!-- 工作记录列表 -->
-            <div class="work-record-list" id="workRecordList">
-              <!-- 工作记录将在这里动态生成 -->
+            <!-- 照片网格 -->
+            <div id="photoGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-8">
+                <!-- 缩略图将通过 JavaScript 动态添加 -->
             </div>
-          </div>
-          
-          <!-- 年度总结生成部分 -->
-          <div class="summary-section">
-            <div class="section-title">年度总结生成</div>
-            <p style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-secondary);">
-              基于你的工作记录，AI将生成专业的年度工作总结
-            </p>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">总结年份</label>
-                <select class="form-select" id="summaryYear">
-                  <option value="2024">2024年</option>
-                  <option value="2023">2023年</option>
-                  <option value="2022">2022年</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">总结类型</label>
-                <select class="form-select" id="summaryType">
-                  <option value="personal">个人工作总结</option>
-                  <option value="technical">技术能力总结</option>
-                  <option value="project">项目成果总结</option>
-                </select>
-              </div>
+            
+            <!-- 添加照片按钮 -->
+            <div class="mt-8 text-center">
+                <label for="photoUpload" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-6 rounded-full cursor-pointer transition-all duration-300 transform hover:scale-105">
+                    <i class="fa fa-plus mr-2"></i>添加照片
+                </label>
+                <input type="file" id="photoUpload" accept="image/*" multiple class="hidden">
             </div>
-            <button class="summary-btn" id="generateSummaryBtn">生成年度总结</button>
-            <div class="summary-result" id="summaryResult" style="display: none;">
-              <!-- 总结结果将在这里显示 -->
+        </section>
+        
+        <!-- 生日祝福区 -->
+        <section class="bg-white rounded-2xl shadow-xl p-6 mb-10">
+            <h2 class="text-2xl font-bold text-pink-600 mb-6 text-center">
+                <i class="fa fa-heart mr-2"></i>生日祝福
+            </h2>
+            
+            <div class="bg-pink-100 rounded-xl p-6 mb-6">
+                <p id="birthdayMessage" class="text-lg text-pink-900 italic">
+                    亲爱的宝贝，愿你的生日充满阳光、欢笑和爱！愿你每一天都像今天一样快乐！🎉🎂🎈
+                </p>
             </div>
-          </div>
-          
-          <!-- 搜索知识部分 -->
-          <div class="knowledge-section">
-            <div class="section-title">搜索知识</div>
-            <input type="text" class="search-knowledge" id="searchKnowledge" placeholder="搜索知识库...">
-            <button class="add-knowledge-btn" id="searchKnowledgeBtn">搜索</button>
-          </div>
-          
-          <!-- 知识列表部分 -->
-          <div class="knowledge-section">
-            <div class="section-title">我的知识库</div>
-            <div class="knowledge-list" id="knowledgeList">
-              <!-- 知识条目将在这里动态生成 -->
+            
+            <!-- 编辑祝福按钮 -->
+            <div class="text-center">
+                <button id="editMessageBtn" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-full cursor-pointer transition-all duration-300">
+                    <i class="fa fa-pencil mr-2"></i>编辑祝福
+                </button>
             </div>
-          </div>
-        </div>
-      </div>
+            
+            <!-- 编辑祝福表单 -->
+            <div id="messageEditor" class="hidden mt-6">
+                <textarea id="messageInput" class="w-full h-32 p-4 border-2 border-pink-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500" placeholder="写下你对宝贝的生日祝福..."></textarea>
+                <div class="flex justify-end gap-4 mt-4">
+                    <button id="cancelEditBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-full cursor-pointer transition-all duration-300">
+                        取消
+                    </button>
+                    <button id="saveMessageBtn" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-full cursor-pointer transition-all duration-300">
+                        保存
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 背景音乐控制区 -->
+        <section class="bg-white rounded-2xl shadow-xl p-6">
+            <h2 class="text-2xl font-bold text-pink-600 mb-6 text-center">
+                <i class="fa fa-music mr-2"></i>生日音乐
+            </h2>
+            
+            <div class="flex flex-wrap justify-center gap-4">
+                <button class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-full cursor-pointer transition-all duration-300 flex items-center">
+                    <i class="fa fa-play mr-2"></i>生日快乐歌
+                </button>
+                <button class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-full cursor-pointer transition-all duration-300 flex items-center">
+                    <i class="fa fa-play mr-2"></i>儿童欢乐曲
+                </button>
+                <button class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-full cursor-pointer transition-all duration-300 flex items-center">
+                    <i class="fa fa-upload mr-2"></i>上传音乐
+                </button>
+            </div>
+        </section>
     </div>
-  </div>
-
-  <script>
-    // 配置
-    const API_KEY = 'sk-cf810705e966476eb6aabf5651e42163';
-    const API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
-    const MODEL_NAME = 'qwen-max';
-
-    // 状态管理
-    let conversationHistory = [];
-    let chatSessions = [];
-    let currentSessionId = null;
-    let isDeepThinking = false;
-    let isWebSearch = false;
-    let recognition = null;
-    let isListening = false;
-    let lastAIResponse = "";
     
-    // 知识库数据
-    let knowledgeBase = [];
-    let workRecords = [];
-
-    // DOM 元素
-    const sidebar = document.getElementById('sidebar');
-    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-    const newChatBtn = document.getElementById('newChatBtn');
-    const historyList = document.getElementById('historyList');
-    const chatContainer = document.getElementById('chatContainer');
-    const chatTitle = document.getElementById('chatTitle');
-    const userInput = document.getElementById('userInput');
-    const sendButton = document.getElementById('sendButton');
-    const voiceButton = document.getElementById('voiceButton');
-    const voiceStatus = document.getElementById('voiceStatus');
-    const deepThinkingBtn = document.getElementById('deepThinkingBtn');
-    const webSearchBtn = document.getElementById('webSearchBtn');
-    const knowledgeBaseBtn = document.getElementById('knowledgeBaseBtn');
-    const knowledgeModal = document.getElementById('knowledgeModal');
-    const closeKnowledgeModal = document.getElementById('closeKnowledgeModal');
-    const knowledgeInput = document.getElementById('knowledgeInput');
-    const knowledgeTags = document.getElementById('knowledgeTags');
-    const addKnowledgeBtn = document.getElementById('addKnowledgeBtn');
-    const searchKnowledge = document.getElementById('searchKnowledge');
-    const searchKnowledgeBtn = document.getElementById('searchKnowledgeBtn');
-    const knowledgeList = document.getElementById('knowledgeList');
-
-    // 初始化
-    document.addEventListener('DOMContentLoaded', function() {
-      loadChatSessions();
-      loadKnowledgeBase();
-      loadWorkRecords();
-      initializeVoiceRecognition();
-      setupEventListeners();
-      autoResizeTextarea();
-      
-      // 添加工作记录按钮事件
-      document.getElementById('addWorkRecordBtn').addEventListener('click', addWorkRecord);
-      
-      // 生成总结按钮事件
-      document.getElementById('generateSummaryBtn').addEventListener('click', generateSummary);
-    });
-
-    // 设置事件监听器
-    function setupEventListeners() {
-      // 移动端菜单
-      mobileMenuBtn.addEventListener('click', toggleSidebar);
-      
-      // 新对话按钮
-      newChatBtn.addEventListener('click', createNewChat);
-      
-      // 发送消息
-      sendButton.addEventListener('click', sendMessage);
-      userInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          sendMessage();
-        }
-      });
-      
-      // 语音按钮
-      voiceButton.addEventListener('click', toggleVoiceRecognition);
-      
-      // 功能按钮
-      deepThinkingBtn.addEventListener('click', function() {
-        isDeepThinking = !isDeepThinking;
-        this.classList.toggle('active', isDeepThinking);
-      });
-      
-      webSearchBtn.addEventListener('click', function() {
-        isWebSearch = !isWebSearch;
-        this.classList.toggle('active', isWebSearch);
-      });
-      
-      // 知识库按钮
-      knowledgeBaseBtn.addEventListener('click', function() {
-        knowledgeModal.style.display = 'flex';
-      });
-      
-      // 关闭知识库模态框
-      closeKnowledgeModal.addEventListener('click', function() {
-        knowledgeModal.style.display = 'none';
-      });
-      
-      // 点击模态框外部关闭
-      knowledgeModal.addEventListener('click', function(e) {
-        if (e.target === knowledgeModal) {
-          knowledgeModal.style.display = 'none';
-        }
-      });
-      
-      // 添加知识
-      addKnowledgeBtn.addEventListener('click', addKnowledge);
-      
-      // 搜索知识
-      searchKnowledgeBtn.addEventListener('click', searchKnowledgeBase);
-      searchKnowledge.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-          searchKnowledgeBase();
-        }
-      });
-      
-      // 清空聊天记录按钮
-      document.getElementById('clearHistoryBtn').addEventListener('click', clearAllChatHistory);
-      
-      // 清空知识库按钮
-      document.getElementById('clearKnowledgeBaseBtn').addEventListener('click', clearKnowledgeBase);
-    }
-
-    // 自动调整文本区域高度
-    function autoResizeTextarea() {
-      userInput.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-      });
-    }
-
-    // 切换侧边栏（移动端）
-    function toggleSidebar() {
-      sidebar.classList.toggle('open');
-    }
-
-    // 创建新对话
-    function createNewChat() {
-      const sessionId = 'chat_' + Date.now();
-      const session = {
-        id: sessionId,
-        title: '新对话',
-        createdAt: new Date().toISOString(),
-        messages: []
-      };
-      
-      chatSessions.push(session);
-      currentSessionId = sessionId;
-      conversationHistory = [];
-      
-      // 更新UI
-      chatContainer.innerHTML = '';
-      chatTitle.textContent = '新对话';
-      userInput.value = '';
-      
-      // 添加欢迎消息
-      addMessage('ai', '你好！我是米小兜，你的AI小伙伴，有什么可以帮助你的吗？');
-      
-      // 保存并更新历史列表
-      saveChatSessions();
-      renderHistoryList();
-      
-      // 在移动端关闭侧边栏
-      if (window.innerWidth <= 768) {
-        sidebar.classList.remove('open');
-      }
-    }
-
-    // 加载对话会话
-    function loadChatSessions() {
-      const saved = localStorage.getItem('chatSessions');
-      if (saved) {
-        chatSessions = JSON.parse(saved);
-        renderHistoryList();
-        
-        if (chatSessions.length > 0) {
-          // 加载最新会话
-          const latestSession = chatSessions[chatSessions.length - 1];
-          loadChatSession(latestSession.id);
-        } else {
-          createNewChat();
-        }
-      } else {
-        createNewChat();
-      }
-    }
-
-    // 保存对话会话
-    function saveChatSessions() {
-      localStorage.setItem('chatSessions', JSON.stringify(chatSessions));
-    }
-
-    // 渲染历史列表
-   // 修改 renderHistoryList 函数
-function renderHistoryList() {
-  historyList.innerHTML = '';
-  
-  chatSessions.forEach(session => {
-    const historyItem = document.createElement('div');
-    historyItem.className = 'history-item';
-    if (session.id === currentSessionId) {
-      historyItem.classList.add('active');
-    }
+    <!-- 底部装饰 -->
+    <div class="fixed bottom-0 left-0 right-0 h-16 bg-gradient-birthday z-10 shadow-md"></div>
     
-    historyItem.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-        <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${session.title}</span>
-        <button class="delete-chat-btn" onclick="deleteChatSession('${session.id}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 4px; margin-left: 8px;">
-          <i class="fas fa-times"></i>
+    <!-- 全屏照片查看器 -->
+    <div id="photoViewer" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center">
+        <button id="closeViewerBtn" class="absolute top-4 right-4 text-white text-3xl hover:text-pink-300 cursor-pointer">
+            <i class="fa fa-times"></i>
         </button>
-      </div>
-    `;
+        <img id="viewerImage" src="" alt="大图预览" class="max-w-[90%] max-h-[90vh] object-contain">
+    </div>
     
-    historyItem.addEventListener('click', (e) => {
-      // 防止点击删除按钮时触发切换会话
-      if (!e.target.closest('.delete-chat-btn')) {
-        loadChatSession(session.id);
-        if (window.innerWidth <= 768) {
-          sidebar.classList.remove('open');
-        }
-      }
-    });
-    
-    historyList.appendChild(historyItem);
-  });
-}
-    
-    // 加载特定对话会话
-    // 加载特定对话会话
-function loadChatSession(sessionId) {
-  const session = chatSessions.find(s => s.id === sessionId);
-  if (!session) return;
-  
-  currentSessionId = sessionId;
-  conversationHistory = [...session.messages];
-  chatTitle.textContent = session.title;
-  
-  // 清空并重新渲染聊天内容
-  chatContainer.innerHTML = '';
-  session.messages.forEach(msg => {
-    addMessage(msg.role === 'user' ? 'user' : 'ai', msg.content, false);
-  });
-  
-  // 更新历史列表高亮
-  renderHistoryList();
-  
-  // 滚动到底部
-  scrollToBottom();
-}
-
-// 删除单个对话会话
-function deleteChatSession(sessionId) {
-  if (confirm('确定要删除这个对话吗？此操作不可恢复！')) {
-    // 从会话列表中移除
-    chatSessions = chatSessions.filter(session => session.id !== sessionId);
-    
-    // 如果删除的是当前会话，需要切换到其他会话或创建新会话
-    if (currentSessionId === sessionId) {
-      if (chatSessions.length > 0) {
-        // 切换到第一个会话
-        loadChatSession(chatSessions[0].id);
-      } else {
-        // 没有其他会话，创建新会话
-        createNewChat();
-      }
-    }
-    
-    // 保存更改
-    saveChatSessions();
-    renderHistoryList();
-    
-    alert('对话已删除！');
-  }
-}
-
-    // 添加消息到聊天界面
-    function addMessage(sender, content, saveToHistory = true) {
-      const messageDiv = document.createElement('div');
-      messageDiv.className = `message message-${sender}`;
-      
-      const avatarClass = sender === 'user' ? 'avatar-user' : 'avatar-ai';
-      const avatarIcon = sender === 'user' ? 'fas fa-user' : 'fas fa-child';
-      
-      messageDiv.innerHTML = `
-        <div class="message-content">
-          <div class="avatar ${avatarClass}">
-            <i class="${avatarIcon}"></i>
-          </div>
-          <div class="message-text">
-            <p>${content.replace(/\n/g, '<br>')}</p>
-            <div class="message-actions">
-              <button class="action-btn" onclick="copyToClipboard('${content.replace(/'/g, "\\'")}')">
-                <i class="far fa-copy"></i> 复制
-              </button>
+    <!-- 编辑祝福弹窗 -->
+    <div id="messageModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-8 max-w-lg w-full mx-4">
+            <h3 class="text-2xl font-bold text-pink-600 mb-6 text-center">编辑生日祝福</h3>
+            <textarea id="modalMessageInput" class="w-full h-32 p-4 border-2 border-pink-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500" placeholder="写下你对宝贝的生日祝福..."></textarea>
+            <div class="flex justify-end gap-4 mt-6">
+                <button id="modalCancelBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-full cursor-pointer transition-all duration-300">
+                    取消
+                </button>
+                <button id="modalSaveBtn" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-full cursor-pointer transition-all duration-300">
+                    保存
+                </button>
             </div>
-          </div>
         </div>
-      `;
-      
-      chatContainer.appendChild(messageDiv);
-      
-      if (saveToHistory) {
-        // 保存到当前会话
-        const session = chatSessions.find(s => s.id === currentSessionId);
-        if (session) {
-          session.messages.push({
-            role: sender === 'user' ? 'user' : 'assistant',
-            content: content
-          });
-          
-          // 更新会话标题（使用第一条用户消息）
-          if (session.title === '新对话' && sender === 'user') {
-            session.title = content.length > 20 ? content.substring(0, 20) + '...' : content;
-            chatTitle.textContent = session.title;
-          }
-          
-          saveChatSessions();
-          renderHistoryList();
-        }
-      }
-      
-      scrollToBottom();
-    }
-
-    // 显示AI正在输入
-    function showTypingIndicator() {
-      const messageDiv = document.createElement('div');
-      messageDiv.className = 'message message-ai';
-      messageDiv.id = 'typing-indicator';
-      
-      messageDiv.innerHTML = `
-        <div class="message-content">
-          <div class="avatar avatar-ai">
-            <i class="fas fa-child"></i>
-          </div>
-          <div class="message-text">
-            <div class="typing-indicator">
-              <div class="typing-dot"></div>
-              <div class="typing-dot"></div>
-              <div class="typing-dot"></div>
-            </div>
-          </div>
-        </div>
-      `;
-      
-      chatContainer.appendChild(messageDiv);
-      scrollToBottom();
-    }
-
-    // 移除输入指示器
-    function removeTypingIndicator() {
-      const indicator = document.getElementById('typing-indicator');
-      if (indicator) {
-        indicator.remove();
-      }
-    }
-
-    // 发送消息 - 修复知识库检索问题
-    async function sendMessage() {
-      const message = userInput.value.trim();
-      if (!message) return;
-
-      // 显示用户消息
-      addMessage('user', message);
-      
-      // 清空输入框
-      userInput.value = '';
-      userInput.style.height = 'auto';
-      
-      // 显示思考中指示器
-      showTypingIndicator();
-
-      try {
-        // 从知识库中搜索相关内容 - 改进搜索算法
-        const relevantKnowledge = searchKnowledgeInBase(message);
-        console.log('找到相关知识:', relevantKnowledge);
-        
-        // 构建系统提示词
-        let systemMessage = "你是一个名叫米小兜的AI助手，回答风格亲切友善、专业且简洁。";
-        
-        // 如果有相关知识，优先使用知识库信息
-        if (relevantKnowledge.length > 0) {
-          systemMessage += "\n\n【重要指令】请优先参考以下用户提供的知识库信息来回答问题。这些是用户的真实信息，请直接基于这些信息回答，不要要求用户重复提供：\n";
-          relevantKnowledge.forEach((item, index) => {
-            systemMessage += `--- 知识条目 ${index + 1} ---\n${item.content}\n\n`;
-          });
-        }
-        
-        if (isDeepThinking) {
-          systemMessage += "请提供深入、详细的分析和思考过程。";
-        }
-        
-        if (isWebSearch) {
-          systemMessage += "如果用户的问题需要最新信息，请说明这些信息可能不是最新的，并建议开启联网搜索功能。";
-        }
-
-        const messages = [
-          { role: "system", content: systemMessage },
-          ...conversationHistory,
-          { role: "user", content: message }
+    </div>
+    
+    <script>
+        // 示例照片数据
+        const photos = [
+            { url: 'https://p11-doubao-search-sign.byteimg.com/tos-cn-i-6w9my0ksvp/f0c3712a8ce5479c92ff88ca84e1deff~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1777291810&x-signature=gNblHFNyPk3GwWYLpvpaWnik1y4%3D', title: '生日蛋糕1' },
+            { url: 'https://p11-doubao-search-sign.byteimg.com/tos-cn-i-6w9my0ksvp/95881b38b944401c95b674ce2572ac7d~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1777291810&x-signature=BWc%2FXcnApLrpP84WHYSioOjv7So%3D', title: '生日蛋糕2' },
+            { url: 'https://p11-doubao-search-sign.byteimg.com/tos-cn-i-6w9my0ksvp/0cfc9e098f334121bb4d638c65324bfe~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1777291810&x-signature=aBWE6LA7xGu2XoVXx0x4Zzupnh4%3D', title: '生日蛋糕3' },
+            { url: 'https://p11-doubao-search-sign.byteimg.com/tos-cn-i-6w9my0ksvp/a5a8efb54eb7406eabf5e02c13519f00~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1777291810&x-signature=8JNOL4ry%2B7IFmaVimbqE6rJRwNw%3D', title: '生日蛋糕4' },
+            { url: 'https://p26-doubao-search-sign.byteimg.com/labis/5ed9174075b8641991e50e1e5d6df8d3~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1777291810&x-signature=aCUB9ksslZlaQqRLlICR6Xgk%2Bsg%3D', title: '生日蛋糕5' },
+            { url: 'https://p26-doubao-search-sign.byteimg.com/labis/4f12a246d0c6ec6c828e7d3b40e3009b~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1777291810&x-signature=8gfe%2FMaV%2Fkxb0CyCh4ZA4daf6g4%3D', title: '生日气球1' },
+            { url: 'https://p26-doubao-search-sign.byteimg.com/labis/352490d47c714e4b2b9f53c52198a5ad~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1777291810&x-signature=ZImgQ%2BJwgZKWH4AkQwDdJEfPSiE%3D', title: '生日气球2' },
+            { url: 'https://p26-doubao-search-sign.byteimg.com/labis/e201533038f53c4e1d9fd2408a3dacce~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1777291810&x-signature=PDX2fxNI0tbBqh1pvz4ccR4%2Fj9k%3D', title: '生日气球3' },
+            { url: 'https://p3-doubao-search-sign.byteimg.com/labis/98a26773eaa5674624abf5cddc40384c~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1777291810&x-signature=q1llEa23PollzmQLxJuISXbQJJQ%3D', title: '生日气球4' },
+            { url: 'https://p3-doubao-search-sign.byteimg.com/labis/image/78abf6a0cc9343ed6faa2059f13e8ae0~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1777291810&x-signature=cbHq4BkUMfiUXtTJyqXmHwuKGoY%3D', title: '生日礼物1' },
+            { url: 'https://p3-doubao-search-sign.byteimg.com/labis/b727cc9615780994b33eb3b3936aa61b~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1777291810&x-signature=esshVWeiGjp0yQCyWt3XpEywDDM%3D', title: '生日礼物2' },
+            { url: 'https://p3-doubao-search-sign.byteimg.com/labis/e2e16ee9de25079f87647188c0a27ae9~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1777291810&x-signature=XxdC6BaeZQn%2B6x%2FVPU4v2W1ewFI%3D', title: '生日礼物3' }
         ];
-
-        // 调用千问API
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${API_KEY}`
-          },
-          body: JSON.stringify({
-            model: MODEL_NAME,
-            messages: messages,
-            temperature: isDeepThinking ? 0.7 : 0.5
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error(`API请求失败: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const aiReply = data.choices[0].message.content;
-        lastAIResponse = aiReply;
         
-        // 移除输入指示器并添加AI回复
-        removeTypingIndicator();
-        addMessage('ai', aiReply);
+        // 当前轮播索引
+        let currentSlide = 0;
         
-        // 更新对话历史
-        conversationHistory.push({ role: "user", content: message });
-        conversationHistory.push({ role: "assistant", content: aiReply });
+        // DOM 元素
+        const photoCarousel = document.getElementById('photoCarousel');
+        const photoGrid = document.getElementById('photoGrid');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const photoViewer = document.getElementById('photoViewer');
+        const viewerImage = document.getElementById('viewerImage');
+        const closeViewerBtn = document.getElementById('closeViewerBtn');
+        const birthdayMessage = document.getElementById('birthdayMessage');
+        const editMessageBtn = document.getElementById('editMessageBtn');
+        const messageModal = document.getElementById('messageModal');
+        const modalMessageInput = document.getElementById('modalMessageInput');
+        const modalCancelBtn = document.getElementById('modalCancelBtn');
+        const modalSaveBtn = document.getElementById('modalSaveBtn');
+        const photoUpload = document.getElementById('photoUpload');
         
-      } catch (error) {
-        console.error('出错了:', error);
-        removeTypingIndicator();
-        addMessage('ai', `抱歉，我暂时无法回应。错误详情: ${error.message}`);
-      }
-    }
-
-    // 复制到剪贴板
-    function copyToClipboard(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        // 可以添加复制成功的提示
-      });
-    }
-
-    // 滚动到底部
-    function scrollToBottom() {
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-
-    // 语音识别功能
-    function initializeVoiceRecognition() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      
-      if (!SpeechRecognition) {
-        voiceButton.disabled = true;
-        voiceButton.title = "您的浏览器不支持语音识别";
-        return;
-      }
-      
-      recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = 'zh-CN';
-      
-      recognition.onstart = function() {
-        isListening = true;
-        voiceButton.classList.add('listening');
-        voiceStatus.textContent = "正在聆听...请说话";
-      };
-      
-      recognition.onresult = function(event) {
-        const transcript = event.results[0][0].transcript;
-        userInput.value = transcript;
-        voiceStatus.textContent = `识别结果: ${transcript}`;
-        
-        // 自动调整文本区域高度
-        userInput.style.height = 'auto';
-        userInput.style.height = (userInput.scrollHeight) + 'px';
-      };
-      
-      recognition.onerror = function(event) {
-        let errorMessage = '语音识别错误: ';
-        
-        switch(event.error) {
-          case 'not-allowed':
-          case 'permission-denied':
-            errorMessage += '麦克风权限被拒绝。请检查浏览器设置，允许网站使用麦克风。';
-            break;
-          case 'no-speech':
-            errorMessage += '没有检测到语音输入。请确保麦克风正常工作并说话。';
-            break;
-          case 'audio-capture':
-            errorMessage += '无法捕获音频。请检查麦克风设备是否连接正常。';
-            break;
-          case 'network':
-            errorMessage += '网络错误导致语音识别失败。请检查网络连接。';
-            break;
-          default:
-            errorMessage += event.error;
+        // 初始化照片轮播
+        function initCarousel() {
+            photos.forEach((photo, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'min-w-full h-80 md:h-96 relative';
+                slide.innerHTML = `
+                    <img src="${photo.url}" alt="${photo.title}" class="w-full h-full object-cover rounded-xl cursor-pointer">
+                    <button class="absolute top-2 right-2 bg-red-500/70 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition-all duration-300 opacity-0 hover:opacity-100">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                `;
+                slide.querySelector('img').addEventListener('click', () => openPhotoViewer(photo.url, index));
+                slide.querySelector('button').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deletePhoto(index);
+                });
+                photoCarousel.appendChild(slide);
+                
+                // 添加指示器
+                const indicator = document.createElement('div');
+                indicator.className = `w-3 h-3 rounded-full ${index === 0 ? 'bg-pink-600' : 'bg-gray-300'} cursor-pointer`;
+                indicator.addEventListener('click', () => goToSlide(index));
+                document.querySelector('.flex.justify-center.gap-2').appendChild(indicator);
+            });
+            
+            // 设置轮播自动播放
+            setInterval(nextSlide, 5000);
         }
         
-        voiceStatus.textContent = errorMessage;
-        stopVoiceRecognition();
-      };
-      
-      recognition.onend = function() {
-        stopVoiceRecognition();
-      };
-    }
-    
-    function toggleVoiceRecognition() {
-      if (!recognition) {
-        voiceStatus.textContent = "语音识别未初始化";
-        return;
-      }
-      
-      if (isListening) {
-        stopVoiceRecognition();
-      } else {
-        startVoiceRecognition();
-      }
-    }
-    
-    function startVoiceRecognition() {
-      try {
-        recognition.start();
-      } catch (error) {
-        console.error('启动语音识别失败:', error);
-        voiceStatus.textContent = "启动语音识别失败，请重试";
-      }
-    }
-    
-    function stopVoiceRecognition() {
-      if (recognition && isListening) {
-        recognition.stop();
-      }
-      isListening = false;
-      voiceButton.classList.remove('listening');
-    }
-
-    // 知识库功能 - 改进搜索算法
-    function loadKnowledgeBase() {
-      const saved = localStorage.getItem('knowledgeBase');
-      if (saved) {
-        knowledgeBase = JSON.parse(saved);
-        renderKnowledgeList();
-      }
-    }
-
-    function saveKnowledgeBase() {
-      localStorage.setItem('knowledgeBase', JSON.stringify(knowledgeBase));
-    }
-
-    function addKnowledge() {
-      const content = knowledgeInput.value.trim();
-      const tags = knowledgeTags.value.split(',').map(tag => tag.trim()).filter(tag => tag);
-      
-      if (!content) return;
-      
-      const knowledgeItem = {
-        id: Date.now(),
-        content: content,
-        tags: tags,
-        createdAt: new Date().toISOString()
-      };
-      
-      knowledgeBase.push(knowledgeItem);
-      saveKnowledgeBase();
-      renderKnowledgeList();
-      
-      // 清空输入
-      knowledgeInput.value = '';
-      knowledgeTags.value = '';
-    }
-
-    function searchKnowledgeBase() {
-      const query = searchKnowledge.value.trim().toLowerCase();
-      if (!query) {
-        renderKnowledgeList();
-        return;
-      }
-      
-      const filteredKnowledge = knowledgeBase.filter(item => {
-        const contentMatch = item.content.toLowerCase().includes(query);
-        const tagsMatch = item.tags.some(tag => tag.toLowerCase().includes(query));
-        return contentMatch || tagsMatch;
-      });
-      
-      renderKnowledgeList(filteredKnowledge);
-    }
-
-    // 改进的知识库搜索算法
-    function searchKnowledgeInBase(query) {
-      const keywords = query.toLowerCase().split(/\s+/).filter(word => word.length > 1);
-      
-      if (keywords.length === 0) return [];
-      
-      // 计算相关性分数
-      const scoredKnowledge = knowledgeBase.map(item => {
-        let score = 0;
-        const content = item.content.toLowerCase();
-        const tags = item.tags.map(tag => tag.toLowerCase());
-        
-        // 关键词在内容中匹配
-        keywords.forEach(keyword => {
-          if (content.includes(keyword)) {
-            score += 3; // 内容匹配权重更高
-          }
-        });
-        
-        // 关键词在标签中匹配
-        keywords.forEach(keyword => {
-          if (tags.some(tag => tag.includes(keyword))) {
-            score += 2;
-          }
-        });
-        
-        // 完全匹配名称关键词（如"名字"、"姓名"、"称呼"等）
-        const nameKeywords = ['名字', '姓名', '称呼', '叫什么', '我是谁'];
-        if (nameKeywords.some(nameKey => query.includes(nameKey))) {
-          // 如果知识库中包含姓名信息，提高分数
-          if (content.includes('张三') || content.includes('名字') || content.includes('姓名')) {
-            score += 10;
-          }
+        // 初始化照片网格
+        function initPhotoGrid() {
+            photos.forEach((photo, index) => {
+                const thumbnail = document.createElement('div');
+                thumbnail.className = 'rounded-lg overflow-hidden shadow-md cursor-pointer transform transition-transform duration-300 hover:scale-105 relative';
+                thumbnail.innerHTML = `
+                    <img src="${photo.url}" alt="${photo.title}" class="w-full h-40 object-cover">
+                    <button class="absolute top-2 right-2 bg-red-500/70 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center transition-all duration-300 opacity-0 hover:opacity-100">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                `;
+                thumbnail.querySelector('img').addEventListener('click', () => openPhotoViewer(photo.url, index));
+                thumbnail.querySelector('button').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deletePhoto(index);
+                });
+                photoGrid.appendChild(thumbnail);
+            });
         }
         
-        return { item, score };
-      });
-      
-      // 过滤掉分数为0的，按分数排序，返回前5个
-      return scoredKnowledge
-        .filter(({ score }) => score > 0)
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 5)
-        .map(({ item }) => item);
-    }
-
-    function renderKnowledgeList(knowledgeArray = knowledgeBase) {
-      knowledgeList.innerHTML = '';
-      
-      if (knowledgeArray.length === 0) {
-        knowledgeList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">暂无知识条目</p>';
-        return;
-      }
-      
-      knowledgeArray.forEach(item => {
-        const knowledgeItem = document.createElement('div');
-        knowledgeItem.className = 'knowledge-item';
-        
-        knowledgeItem.innerHTML = `
-          <div class="knowledge-content">${item.content}</div>
-          <div class="knowledge-meta">
-            <span>标签: ${item.tags.join(', ') || '无'}</span>
-            <span>${new Date(item.createdAt).toLocaleDateString()}</span>
-          </div>
-          <div style="margin-top: 8px; text-align: right;">
-            <button class="delete-knowledge-btn" onclick="deleteKnowledgeItem(${item.id})" style="background-color: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
-              <i class="fas fa-trash"></i> 删除
-            </button>
-          </div>
-        `;
-        
-        knowledgeList.appendChild(knowledgeItem);
-      });
-    }
-
-    // 删除知识条目
-    function deleteKnowledgeItem(id) {
-      if (confirm('确定要删除这条知识吗？此操作不可恢复！')) {
-        knowledgeBase = knowledgeBase.filter(item => item.id !== id);
-        saveKnowledgeBase();
-        renderKnowledgeList();
-        alert('知识条目已删除！');
-      }
-    }
-
-    // 清空整个知识库
-    function clearKnowledgeBase() {
-      if (confirm('确定要清空整个知识库吗？此操作将删除所有知识条目，不可恢复！')) {
-        knowledgeBase = [];
-        saveKnowledgeBase();
-        renderKnowledgeList();
-        alert('知识库已清空！');
-      }
-    }
-
-    // 清空所有聊天记录
-    function clearAllChatHistory() {
-      if (confirm('确定要清空所有聊天记录吗？此操作不可恢复！')) {
-        chatSessions = [];
-        conversationHistory = [];
-        currentSessionId = null;
-        
-        // 更新UI
-        chatContainer.innerHTML = '';
-        historyList.innerHTML = '';
-        chatTitle.textContent = '新对话';
-        
-        // 保存更改
-        saveChatSessions();
-        
-        // 添加欢迎消息
-        addMessage('ai', '你好！我是米小兜，你的AI小伙伴，有什么可以帮助你的吗？');
-        
-        alert('聊天记录已清空！');
-      }
-    }
-
-    // 工作记录功能
-    function loadWorkRecords() {
-      const saved = localStorage.getItem('workRecords');
-      if (saved) {
-        workRecords = JSON.parse(saved);
-        renderWorkRecordList();
-      }
-    }
-
-    function saveWorkRecords() {
-      localStorage.setItem('workRecords', JSON.stringify(workRecords));
-    }
-
-    function addWorkRecord() {
-      const taskName = document.getElementById('workTaskName').value.trim();
-      const projectName = document.getElementById('workProjectName').value.trim();
-      const startDate = document.getElementById('workStartDate').value;
-      const endDate = document.getElementById('workEndDate').value;
-      const description = document.getElementById('workDescription').value.trim();
-      const achievements = document.getElementById('workAchievements').value.trim();
-      const skills = document.getElementById('workSkills').value.split(',').map(skill => skill.trim()).filter(skill => skill);
-      
-      if (!taskName || !projectName || !startDate || !description) {
-        alert('请填写必填字段：任务名称、项目名称、开始日期和工作描述');
-        return;
-      }
-      
-      const workRecord = {
-        id: Date.now(),
-        taskName: taskName,
-        projectName: projectName,
-        startDate: startDate,
-        endDate: endDate || startDate,
-        description: description,
-        achievements: achievements,
-        skills: skills,
-        createdAt: new Date().toISOString()
-      };
-      
-      workRecords.push(workRecord);
-      saveWorkRecords();
-      renderWorkRecordList();
-      
-      // 同时将工作记录添加到知识库，便于AI检索
-      const knowledgeContent = `【工作记录】\n任务：${taskName}\n项目：${projectName}\n时间：${startDate} 至 ${endDate || startDate}\n工作内容：${description}\n${achievements ? `成果亮点：${achievements}\n` : ''}技能标签：${skills.join(', ')}`;
-      
-      const knowledgeItem = {
-        id: 'work_' + workRecord.id,
-        content: knowledgeContent,
-        tags: ['工作记录', projectName, ...skills],
-        createdAt: new Date().toISOString()
-      };
-      
-      knowledgeBase.push(knowledgeItem);
-      saveKnowledgeBase();
-      renderKnowledgeList();
-      
-      // 清空表单
-      document.getElementById('workTaskName').value = '';
-      document.getElementById('workProjectName').value = '';
-      document.getElementById('workStartDate').value = '';
-      document.getElementById('workEndDate').value = '';
-      document.getElementById('workDescription').value = '';
-      document.getElementById('workAchievements').value = '';
-      document.getElementById('workSkills').value = '';
-    }
-
-    function renderWorkRecordList() {
-      const workRecordList = document.getElementById('workRecordList');
-      workRecordList.innerHTML = '';
-      
-      if (workRecords.length === 0) {
-        workRecordList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">暂无工作记录</p>';
-        return;
-      }
-      
-      // 按日期倒序排列
-      const sortedRecords = [...workRecords].sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
-      
-      sortedRecords.forEach(record => {
-        const recordElement = document.createElement('div');
-        recordElement.className = 'work-record-item';
-        
-        const duration = record.endDate === record.startDate ? 
-          formatDate(record.startDate) : 
-          `${formatDate(record.startDate)} 至 ${formatDate(record.endDate)}`;
-        
-        recordElement.innerHTML = `
-          <div class="work-record-header">
-            <div>
-              <div class="work-record-title">${record.taskName}</div>
-              <div class="work-record-meta">${record.projectName} | ${duration}</div>
-            </div>
-            <div class="work-record-actions">
-              <button class="record-action-btn" onclick="editWorkRecord(${record.id})">
-                <i class="fas fa-edit"></i>
-              </button>
-              <button class="record-action-btn" onclick="deleteWorkRecord(${record.id})">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </div>
-          <div class="work-record-content">
-            <div><strong>工作内容：</strong>${record.description}</div>
-            ${record.achievements ? `<div><strong>成果亮点：</strong>${record.achievements}</div>` : ''}
-          </div>
-          <div class="work-record-tags">
-            ${record.skills.map(skill => `<span class="work-tag">${skill}</span>`).join('')}
-          </div>
-        `;
-        
-        workRecordList.appendChild(recordElement);
-      });
-    }
-
-    function formatDate(dateString) {
-      const date = new Date(dateString);
-      return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-    }
-
-    function deleteWorkRecord(id) {
-      if (confirm('确定要删除这条工作记录吗？')) {
-        workRecords = workRecords.filter(record => record.id !== id);
-        saveWorkRecords();
-        renderWorkRecordList();
-        
-        // 同时从知识库中删除对应的记录
-        knowledgeBase = knowledgeBase.filter(item => item.id !== 'work_' + id);
-        saveKnowledgeBase();
-        renderKnowledgeList();
-      }
-    }
-
-    function editWorkRecord(id) {
-      const record = workRecords.find(r => r.id === id);
-      if (record) {
-        // 填充表单
-        document.getElementById('workTaskName').value = record.taskName;
-        document.getElementById('workProjectName').value = record.projectName;
-        document.getElementById('workStartDate').value = record.startDate;
-        document.getElementById('workEndDate').value = record.endDate;
-        document.getElementById('workDescription').value = record.description;
-        document.getElementById('workAchievements').value = record.achievements || '';
-        document.getElementById('workSkills').value = record.skills.join(', ');
-        
-        // 删除原记录
-        deleteWorkRecord(id);
-        
-        // 滚动到表单
-        document.querySelector('.work-record-form').scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-
-    async function generateSummary() {
-      const year = document.getElementById('summaryYear').value;
-      const type = document.getElementById('summaryType').value;
-      
-      // 筛选指定年份的工作记录
-      const yearRecords = workRecords.filter(record => {
-        const recordYear = new Date(record.startDate).getFullYear().toString();
-        return recordYear === year;
-      });
-      
-      if (yearRecords.length === 0) {
-        document.getElementById('summaryResult').innerHTML = `<p>${year}年度暂无工作记录，请先添加工作记录。</p>`;
-        document.getElementById('summaryResult').style.display = 'block';
-        return;
-      }
-      
-      // 显示生成中状态
-      document.getElementById('summaryResult').innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> AI正在生成年度总结...</p>';
-      document.getElementById('summaryResult').style.display = 'block';
-      
-      try {
-        // 构建工作记录摘要
-        let workSummary = `${year}年度工作记录摘要：\n\n`;
-        yearRecords.forEach((record, index) => {
-          workSummary += `${index + 1}. 【${record.projectName}】${record.taskName}（${formatDate(record.startDate)}）\n`;
-          workSummary += `   工作内容：${record.description}\n`;
-          if (record.achievements) {
-            workSummary += `   成果亮点：${record.achievements}\n`;
-          }
-          workSummary += `   技能应用：${record.skills.join('、')}\n\n`;
-        });
-        
-        // 根据类型构建不同的提示词
-        let prompt = '';
-        switch(type) {
-          case 'personal':
-            prompt = `请根据以下工作记录，为我生成一份${year}年度的个人工作总结。要求：\n1. 概括全年工作成果\n2. 突出个人贡献和成长\n3. 分析不足与改进方向\n4. 展望未来工作计划\n5. 语言专业、条理清晰\n\n${workSummary}`;
-            break;
-          case 'technical':
-            prompt = `请根据以下工作记录，为我生成一份${year}年度的技术能力总结。要求：\n1. 总结技术栈应用情况\n2. 分析技术难点和解决方案\n3. 评估技能成长路径\n4. 规划未来技术学习方向\n5. 语言专业、技术术语准确\n\n${workSummary}`;
-            break;
-          case 'project':
-            prompt = `请根据以下工作记录，为我生成一份${year}年度的项目成果总结。要求：\n1. 概述各项目完成情况\n2. 量化项目成果和影响\n3. 分析项目管理经验\n4. 总结团队协作效果\n5. 语言专业、数据支撑\n\n${workSummary}`;
-            break;
+        // 轮播下一张
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % photos.length;
+            updateCarousel();
         }
         
-        // 调用AI生成总结
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${API_KEY}`
-          },
-          body: JSON.stringify({
-            model: MODEL_NAME,
-            messages: [
-              { role: "system", content: "你是一个专业的职场顾问，擅长根据工作记录生成各种类型的总结报告。" },
-              { role: "user", content: prompt }
-            ],
-            temperature: 0.7
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error(`API请求失败: ${response.status}`);
+        // 轮播上一张
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + photos.length) % photos.length;
+            updateCarousel();
         }
-
-        const data = await response.json();
-        const summary = data.choices[0].message.content;
         
-        // 显示生成的总结
-        document.getElementById('summaryResult').innerHTML = `
-          <div style="margin-bottom: 12px;">
-            <strong>${year}年度${getSummaryTypeName(type)}：</strong>
-          </div>
-          <div style="white-space: pre-wrap; line-height: 1.6;">${summary}</div>
-          <div style="margin-top: 12px; text-align: center;">
-            <button class="add-knowledge-btn" onclick="copyToClipboard('${summary.replace(/'/g, "\\'")}')">
-              <i class="far fa-copy"></i> 复制总结
-            </button>
-          </div>
-        `;
+        // 跳转到指定幻灯片
+        function goToSlide(index) {
+            currentSlide = index;
+            updateCarousel();
+        }
         
-      } catch (error) {
-        console.error('生成总结失败:', error);
-        document.getElementById('summaryResult').innerHTML = `<p>生成总结失败：${error.message}</p>`;
-      }
-    }
-
-    function getSummaryTypeName(type) {
-      switch(type) {
-        case 'personal': return '个人工作总结';
-        case 'technical': return '技术能力总结';
-        case 'project': return '项目成果总结';
-        default: return '工作总结';
-      }
-    }
-  </script>
+        // 更新轮播状态
+        function updateCarousel() {
+            photoCarousel.style.transform = `translateX(-${currentSlide * 100}%)`;
+            
+            // 更新指示器
+            const indicators = document.querySelectorAll('.flex.justify-center.gap-2 div');
+            indicators.forEach((indicator, index) => {
+                indicator.className = `w-3 h-3 rounded-full ${index === currentSlide ? 'bg-pink-600' : 'bg-gray-300'} cursor-pointer`;
+            });
+        }
+        
+        // 打开照片查看器
+        function openPhotoViewer(url, index) {
+            viewerImage.src = url;
+            photoViewer.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
+            // 保存当前查看的照片索引
+            photoViewer.dataset.currentIndex = index;
+        }
+        
+        // 关闭照片查看器
+        function closePhotoViewer() {
+            photoViewer.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // 打开祝福编辑弹窗
+        function openMessageEditor() {
+            modalMessageInput.value = birthdayMessage.textContent.trim();
+            messageModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // 关闭祝福编辑弹窗
+        function closeMessageEditor() {
+            messageModal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // 保存生日祝福
+        function saveMessage() {
+            const newMessage = modalMessageInput.value.trim();
+            if (newMessage) {
+                birthdayMessage.textContent = newMessage;
+                closeMessageEditor();
+                
+                // 显示保存成功动画
+                const saveNotification = document.createElement('div');
+                saveNotification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-float';
+                saveNotification.textContent = '祝福已保存！';
+                document.body.appendChild(saveNotification);
+                
+                // 3秒后移除通知
+                setTimeout(() => {
+                    saveNotification.remove();
+                }, 3000);
+            }
+        }
+        
+        // 处理照片上传
+        function handlePhotoUpload(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                // 显示上传中动画
+                const uploadNotification = document.createElement('div');
+                uploadNotification.className = 'fixed bottom-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-float';
+                uploadNotification.textContent = '正在上传照片...';
+                document.body.appendChild(uploadNotification);
+                
+                // 处理每个上传的文件
+                Array.from(files).forEach(file => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        // 创建新照片对象
+                        const newPhoto = {
+                            url: e.target.result,
+                            title: file.name
+                        };
+                        
+                        // 添加到照片数组
+                        photos.push(newPhoto);
+                        
+                        // 保存到localStorage
+                        savePhotosToLocalStorage();
+                        
+                        // 更新UI
+                        updatePhotoDisplay();
+                    };
+                    
+                    // 读取文件为DataURL
+                    reader.readAsDataURL(file);
+                });
+                
+                // 模拟上传延迟后显示成功消息
+                setTimeout(() => {
+                    uploadNotification.remove();
+                    
+                    // 显示上传成功动画
+                    const successNotification = document.createElement('div');
+                    successNotification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-float';
+                    successNotification.textContent = `成功上传 ${files.length} 张照片！`;
+                    document.body.appendChild(successNotification);
+                    
+                    // 3秒后移除通知
+                    setTimeout(() => {
+                        successNotification.remove();
+                    }, 3000);
+                }, 1000);
+            }
+        }
+        
+        // 保存照片数据到localStorage
+        function savePhotosToLocalStorage() {
+            localStorage.setItem('birthdayPhotos', JSON.stringify(photos));
+        }
+        
+        // 更新照片显示
+        function updatePhotoDisplay() {
+            // 清空现有内容
+            photoCarousel.innerHTML = '';
+            photoGrid.innerHTML = '';
+            document.querySelector('.flex.justify-center.gap-2').innerHTML = '';
+            
+            // 重新初始化轮播和网格
+            initCarousel();
+            initPhotoGrid();
+            
+            // 重置当前幻灯片索引
+            currentSlide = 0;
+            updateCarousel();
+        }
+        
+        // 删除照片
+        function deletePhoto(index) {
+            // 从数组中删除照片
+            photos.splice(index, 1);
+            
+            // 保存到localStorage
+            savePhotosToLocalStorage();
+            
+            // 更新UI
+            updatePhotoDisplay();
+            
+            // 显示删除成功动画
+            const deleteNotification = document.createElement('div');
+            deleteNotification.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-float';
+            deleteNotification.textContent = '照片已删除！';
+            document.body.appendChild(deleteNotification);
+            
+            // 3秒后移除通知
+            setTimeout(() => {
+                deleteNotification.remove();
+            }, 3000);
+        }
+        
+        // 创建随机气球
+        function createBalloon() {
+            const balloon = document.createElement('div');
+            balloon.className = 'balloon';
+            
+            // 随机大小
+            const size = Math.floor(Math.random() * 60) + 40;
+            balloon.style.width = `${size}px`;
+            balloon.style.height = `${size}px`;
+            
+            // 随机颜色
+            const colors = ['#FF6B8B', '#6BCEFF', '#FFD166', '#06D6A0', '#EF476F', '#118AB2'];
+            balloon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            // 随机位置
+            const posX = Math.floor(Math.random() * window.innerWidth);
+            balloon.style.left = `${posX}px`;
+            balloon.style.bottom = '-100px';
+            
+            // 随机动画延迟
+            balloon.style.animationDelay = `${Math.random() * 10}s`;
+            
+            // 添加到页面
+            document.body.appendChild(balloon);
+            
+            // 动画结束后移除
+            setTimeout(() => {
+                balloon.remove();
+            }, 10000);
+        }
+        
+        // 创建随机彩带
+        function createConfetti() {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            
+            // 随机颜色
+            const colors = ['#FF6B8B', '#6BCEFF', '#FFD166', '#06D6A0', '#EF476F', '#118AB2', '#FF8C42', '#A77DC2'];
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            // 随机位置
+            const posX = Math.floor(Math.random() * window.innerWidth);
+            confetti.style.left = `${posX}px`;
+            
+            // 随机动画延迟和持续时间
+            confetti.style.animationDelay = `${Math.random() * 5}s`;
+            confetti.style.animationDuration = `${Math.random() * 5 + 5}s`;
+            
+            // 添加到页面
+            document.body.appendChild(confetti);
+            
+            // 动画结束后移除
+            setTimeout(() => {
+                confetti.remove();
+            }, 10000);
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化轮播和网格
+            initCarousel();
+            initPhotoGrid();
+            
+            // 绑定事件
+            prevBtn.addEventListener('click', prevSlide);
+            nextBtn.addEventListener('click', nextSlide);
+            closeViewerBtn.addEventListener('click', closePhotoViewer);
+            editMessageBtn.addEventListener('click', openMessageEditor);
+            modalCancelBtn.addEventListener('click', closeMessageEditor);
+            modalSaveBtn.addEventListener('click', saveMessage);
+            photoUpload.addEventListener('change', handlePhotoUpload);
+            
+            // 照片查看器导航按钮
+            document.getElementById('prevPhotoBtn').addEventListener('click', showPrevPhoto);
+            document.getElementById('nextPhotoBtn').addEventListener('click', showNextPhoto);
+            document.getElementById('deletePhotoBtn').addEventListener('click', deleteCurrentPhoto);
+            
+            // 键盘导航
+            document.addEventListener('keydown', handleKeyNavigation);
+        });
+        
+        // 显示上一张照片
+        function showPrevPhoto() {
+            const currentIndex = parseInt(photoViewer.dataset.currentIndex);
+            const newIndex = (currentIndex - 1 + photos.length) % photos.length;
+            viewerImage.src = photos[newIndex].url;
+            photoViewer.dataset.currentIndex = newIndex;
+        }
+        
+        // 显示下一张照片
+        function showNextPhoto() {
+            const currentIndex = parseInt(photoViewer.dataset.currentIndex);
+            const newIndex = (currentIndex + 1) % photos.length;
+            viewerImage.src = photos[newIndex].url;
+            photoViewer.dataset.currentIndex = newIndex;
+        }
+        
+        // 删除当前查看的照片
+        function deleteCurrentPhoto() {
+            const currentIndex = parseInt(photoViewer.dataset.currentIndex);
+            deletePhoto(currentIndex);
+            closePhotoViewer();
+        }
+        
+        // 处理键盘导航
+        function handleKeyNavigation(event) {
+            if (!photoViewer.classList.contains('hidden')) {
+                switch (event.key) {
+                    case 'ArrowLeft':
+                        showPrevPhoto();
+                        break;
+                    case 'ArrowRight':
+                        showNextPhoto();
+                        break;
+                    case 'Escape':
+                        closePhotoViewer();
+                        break;
+                    case 'Delete':
+                        deleteCurrentPhoto();
+                        break;
+                }
+            }
+        }
+            
+            // 点击页面创建气球和彩带
+            document.addEventListener('click', (event) => {
+                // 排除特定元素
+                const excludedElements = ['button', 'input', 'textarea', '.balloon', '.confetti'];
+                const isExcluded = excludedElements.some(selector => 
+                    event.target.matches(selector) || event.target.closest(selector)
+                );
+                
+                if (!isExcluded) {
+                    createBalloon();
+                    createConfetti();
+                }
+            });
+            
+            // 自动创建气球和彩带
+            setInterval(() => {
+                createBalloon();
+                createConfetti();
+            }, 2000);
+        });
+    </script>
 </body>
 </html>
