@@ -1624,21 +1624,148 @@ function getSummaryTypeName(type) {
     }
 
     // 发送消息
-    async function sendMessage() {
-      const message = userInput.value.trim();
-      if (!message) return;
+    // 发送消息函数 - 修复版本（包含知识库集成）
+async function sendMessage() {
+  const message = userInput.value.trim();
+  if (!message) return;
+
+  const chatBox = document.getElementById('chatContainer');
+  const currentTime = getCurrentTime();
+  
+  // 在界面上显示用户输入
+  chatBox.innerHTML += `
+    <div class="message user-message">
+      <div class="message-content">
+        <div class="avatar avatar-user">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="message-text">
+          <p>${message}</p>
+          <div class="message-time">${currentTime}</div>
+        </div>
+      </div>
+    </div>
+  `;
+  userInput.value = '';
+  userInput.style.height = 'auto';
+  
+  // 显示"思考中"的提示
+  const thinkingId = "thinking-" + Date.now();
+  chatBox.innerHTML += `
+    <div class="message ai-message" id="${thinkingId}">
+      <div class="message-content">
+        <div class="avatar avatar-ai">
+          <i class="fas fa-child"></i>
+        </div>
+        <div class="message-text">
+          <p>米小兜正在思考...</p>
+          <div class="message-time">${currentTime}</div>
+        </div>
+      </div>
+    </div>
+  `;
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  try {
+    // 将用户的新消息加入历史
+    conversationHistory.push({ role: "user", content: message });
+
+    // 构建系统提示词 - 修复版本
+    let systemMessage = "你是一个名叫米小兜的AI助手，回答风格亲切友善、专业且简洁。";
+    
+    // 从知识库中搜索相关内容
+    const relevantKnowledge = searchKnowledgeInBase(message);
+    
+    // 如果有相关知识，优先使用知识库信息
+    if (relevantKnowledge.length > 0) {
+      systemMessage += "\n\n【重要指令】请优先参考以下用户提供的知识库信息来回答问题。这些是用户的真实信息：\n";
+      relevantKnowledge.forEach((item, index) => {
+        systemMessage += `--- 知识条目 ${index + 1} ---\n${item.content}\n\n`;
+      });
+      systemMessage += "请直接基于以上知识库信息回答用户问题，不要要求用户重复提供这些信息。";
       
-      // 添加用户消息
-      addMessage('user', message);
-      userInput.value = '';
-      userInput.style.height = 'auto';
-      
-      // 显示AI正在输入
-      showTypingIndicator();
-      
-      try {
-        // 构建对话历史
-        conversationHistory.push({ role: "user", content: message });
+      // 调试信息
+      console.log('🔍 找到相关知识:', relevantKnowledge);
+    } else {
+      console.log('❌ 未找到相关知识');
+    }
+    
+    if (isDeepThinking) {
+      systemMessage += "请提供深入、详细的分析和思考过程。";
+    }
+    
+    if (isWebSearch) {
+      systemMessage += "如果用户的问题需要最新信息，请说明这些信息可能不是最新的，并建议开启联网搜索功能。";
+    }
+
+    const messages = [
+      { role: "system", content: systemMessage },
+      ...conversationHistory
+    ];
+
+    // 调用千问API
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`
+      },
+      body: JSON.stringify({
+        model: MODEL_NAME,
+        messages: messages,
+        temperature: isDeepThinking ? 0.7 : 0.5
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API请求失败: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const aiReply = data.choices[0].message.content;
+    lastAIResponse = aiReply;
+    
+    // 移除输入指示器并添加AI回复
+    document.getElementById(thinkingId).outerHTML = `
+      <div class="message ai-message">
+        <div class="message-content">
+          <div class="avatar avatar-ai">
+            <i class="fas fa-child"></i>
+          </div>
+          <div class="message-text">
+            <p>${aiReply}</p>
+            <div class="message-time">${getCurrentTime()}</div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // 更新对话历史
+    conversationHistory.push({ role: "assistant", content: aiReply });
+    
+    // 启用朗读按钮
+    document.getElementById('speakButton').disabled = false;
+    
+  } catch (error) {
+    console.error('出错了:', error);
+    document.getElementById(thinkingId).outerHTML = `
+      <div class="message ai-message">
+        <div class="message-content">
+          <div class="avatar avatar-ai">
+            <i class="fas fa-child"></i>
+          </div>
+          <div class="message-text">
+            <p>抱歉，我暂时无法回应。错误详情: ${error.message}</p>
+            <div class="message-time">${getCurrentTime()}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // 确保聊天框滚动到底部
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
         
         // 添加系统提示（根据选项）
         let systemMessage = "你是一个名叫米小兜的AI助手，回答风格亲切友善、专业且简洁。";
