@@ -6,7 +6,146 @@
   <title>米小兜AI助手</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    :root {
+   /* 工作记录专用样式 */
+.work-record-form {
+  background-color: var(--bg-light);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.form-input, .form-textarea, .form-select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.form-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.work-record-item {
+  background-color: var(--bg-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.work-record-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.work-record-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.work-record-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.work-record-content {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.work-record-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.work-tag {
+  background-color: rgba(16, 163, 127, 0.1);
+  color: var(--primary);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+.work-record-actions {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+.record-action-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.record-action-btn:hover {
+  color: var(--primary);
+}
+
+.summary-section {
+  background-color: var(--bg-light);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-top: 20px;
+}
+
+.summary-btn {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+  width: 100%;
+}
+
+.summary-btn:hover {
+  background-color: var(--primary-dark);
+}
+
+.summary-result {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: var(--bg-white);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+}
+ :root {
       --primary: #10a37f;
       --primary-light: #1abc9c;
       --primary-dark: #0d8c6c;
@@ -797,40 +936,120 @@
   </div>
 
   <!-- 知识库模态框 -->
-  <div class="modal" id="knowledgeModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-title">我的知识库</div>
-        <button class="close-btn" id="closeKnowledgeModal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="knowledge-manager">
-          <!-- 添加知识部分 -->
-          <div class="knowledge-section">
-            <div class="section-title">添加新知识</div>
-            <textarea class="knowledge-input" id="knowledgeInput" placeholder="输入你想让AI学习的内容..."></textarea>
-            <input type="text" class="knowledge-tags" id="knowledgeTags" placeholder="标签（用逗号分隔）">
-            <button class="add-knowledge-btn" id="addKnowledgeBtn">添加到知识库</button>
-          </div>
-          
-          <!-- 搜索知识部分 -->
-          <div class="knowledge-section">
-            <div class="section-title">搜索知识</div>
-            <input type="text" class="search-knowledge" id="searchKnowledge" placeholder="搜索知识库...">
-            <button class="add-knowledge-btn" id="searchKnowledgeBtn">搜索</button>
-          </div>
-          
-          <!-- 知识列表部分 -->
-          <div class="knowledge-section">
-            <div class="section-title">我的知识库</div>
-            <div class="knowledge-list" id="knowledgeList">
-              <!-- 知识条目将在这里动态生成 -->
+<div class="modal" id="knowledgeModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">我的知识库 & 工作记录</div>
+      <button class="close-btn" id="closeKnowledgeModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="knowledge-manager">
+        <!-- 添加知识部分 -->
+        <div class="knowledge-section">
+          <div class="section-title">添加新知识</div>
+          <textarea class="knowledge-input" id="knowledgeInput" placeholder="输入你想让AI学习的内容..."></textarea>
+          <input type="text" class="knowledge-tags" id="knowledgeTags" placeholder="标签（用逗号分隔）">
+          <button class="add-knowledge-btn" id="addKnowledgeBtn">添加到知识库</button>
+        </div>
+        
+        <!-- 工作记录部分 -->
+        <div class="knowledge-section">
+          <div class="section-title">工作记录</div>
+          <div class="work-record-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">任务名称</label>
+                <input type="text" class="form-input" id="workTaskName" placeholder="例如：完成项目A的前端开发">
+              </div>
+              <div class="form-group">
+                <label class="form-label">项目名称</label>
+                <input type="text" class="form-input" id="workProjectName" placeholder="例如：AI助手项目">
+              </div>
             </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">开始日期</label>
+                <input type="date" class="form-input" id="workStartDate">
+              </div>
+              <div class="form-group">
+                <label class="form-label">完成日期</label>
+                <input type="date" class="form-input" id="workEndDate">
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">工作内容描述</label>
+              <textarea class="form-textarea" id="workDescription" placeholder="详细描述完成的工作内容、使用的技术、解决的问题等..."></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">成果与亮点</label>
+              <textarea class="form-textarea" id="workAchievements" placeholder="描述工作成果、达成的目标、获得的认可等..."></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">技能标签</label>
+              <input type="text" class="form-input" id="workSkills" placeholder="例如：React,Node.js,项目管理,团队协作">
+            </div>
+            
+            <button class="add-knowledge-btn" id="addWorkRecordBtn">添加工作记录</button>
+          </div>
+          
+          <!-- 工作记录列表 -->
+          <div class="work-record-list" id="workRecordList">
+            <!-- 工作记录将在这里动态生成 -->
+          </div>
+        </div>
+        
+        <!-- 年度总结生成部分 -->
+        <div class="summary-section">
+          <div class="section-title">年度总结生成</div>
+          <p style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-secondary);">
+            基于你的工作记录，AI将生成专业的年度工作总结
+          </p>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">总结年份</label>
+              <select class="form-select" id="summaryYear">
+                <option value="2024">2024年</option>
+                <option value="2023">2023年</option>
+                <option value="2022">2022年</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">总结类型</label>
+              <select class="form-select" id="summaryType">
+                <option value="personal">个人工作总结</option>
+                <option value="technical">技术能力总结</option>
+                <option value="project">项目成果总结</option>
+              </select>
+            </div>
+          </div>
+          <button class="summary-btn" id="generateSummaryBtn">生成年度总结</button>
+          <div class="summary-result" id="summaryResult" style="display: none;">
+            <!-- 总结结果将在这里显示 -->
+          </div>
+        </div>
+        
+        <!-- 搜索知识部分 -->
+        <div class="knowledge-section">
+          <div class="section-title">搜索知识</div>
+          <input type="text" class="search-knowledge" id="searchKnowledge" placeholder="搜索知识库...">
+          <button class="add-knowledge-btn" id="searchKnowledgeBtn">搜索</button>
+        </div>
+        
+        <!-- 知识列表部分 -->
+        <div class="knowledge-section">
+          <div class="section-title">我的知识库</div>
+          <div class="knowledge-list" id="knowledgeList">
+            <!-- 知识条目将在这里动态生成 -->
           </div>
         </div>
       </div>
     </div>
   </div>
+</div>
 
   <script>
     // 配置
@@ -882,6 +1101,271 @@
       setupEventListeners();
       autoResizeTextarea();
     });
+// 在配置常量后添加工作记录数据
+let workRecords = [];
+
+// 在初始化函数中添加工作记录加载
+document.addEventListener('DOMContentLoaded', function() {
+  // 已有的初始化代码...
+  loadWorkRecords();
+  
+  // 添加工作记录按钮事件
+  document.getElementById('addWorkRecordBtn').addEventListener('click', addWorkRecord);
+  
+  // 生成总结按钮事件
+  document.getElementById('generateSummaryBtn').addEventListener('click', generateSummary);
+});
+
+// 在工作记录相关函数区域添加以下函数
+function loadWorkRecords() {
+  const saved = localStorage.getItem('workRecords');
+  if (saved) {
+    workRecords = JSON.parse(saved);
+    renderWorkRecordList();
+  }
+}
+
+function saveWorkRecords() {
+  localStorage.setItem('workRecords', JSON.stringify(workRecords));
+}
+
+function addWorkRecord() {
+  const taskName = document.getElementById('workTaskName').value.trim();
+  const projectName = document.getElementById('workProjectName').value.trim();
+  const startDate = document.getElementById('workStartDate').value;
+  const endDate = document.getElementById('workEndDate').value;
+  const description = document.getElementById('workDescription').value.trim();
+  const achievements = document.getElementById('workAchievements').value.trim();
+  const skills = document.getElementById('workSkills').value.split(',').map(skill => skill.trim()).filter(skill => skill);
+  
+  if (!taskName || !projectName || !startDate || !description) {
+    alert('请填写必填字段：任务名称、项目名称、开始日期和工作描述');
+    return;
+  }
+  
+  const workRecord = {
+    id: Date.now(),
+    taskName: taskName,
+    projectName: projectName,
+    startDate: startDate,
+    endDate: endDate || startDate,
+    description: description,
+    achievements: achievements,
+    skills: skills,
+    createdAt: new Date().toISOString()
+  };
+  
+  workRecords.push(workRecord);
+  saveWorkRecords();
+  renderWorkRecordList();
+  
+  // 同时将工作记录添加到知识库，便于AI检索
+  const knowledgeContent = `【工作记录】\n任务：${taskName}\n项目：${projectName}\n时间：${startDate} 至 ${endDate || startDate}\n工作内容：${description}\n${achievements ? `成果亮点：${achievements}\n` : ''}技能标签：${skills.join(', ')}`;
+  
+  const knowledgeItem = {
+    id: 'work_' + workRecord.id,
+    content: knowledgeContent,
+    tags: ['工作记录', projectName, ...skills],
+    createdAt: new Date().toISOString()
+  };
+  
+  knowledgeBase.push(knowledgeItem);
+  saveKnowledgeBase();
+  renderKnowledgeList();
+  
+  // 清空表单
+  document.getElementById('workTaskName').value = '';
+  document.getElementById('workProjectName').value = '';
+  document.getElementById('workStartDate').value = '';
+  document.getElementById('workEndDate').value = '';
+  document.getElementById('workDescription').value = '';
+  document.getElementById('workAchievements').value = '';
+  document.getElementById('workSkills').value = '';
+}
+
+function renderWorkRecordList() {
+  const workRecordList = document.getElementById('workRecordList');
+  workRecordList.innerHTML = '';
+  
+  if (workRecords.length === 0) {
+    workRecordList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">暂无工作记录</p>';
+    return;
+  }
+  
+  // 按日期倒序排列
+  const sortedRecords = [...workRecords].sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+  
+  sortedRecords.forEach(record => {
+    const recordElement = document.createElement('div');
+    recordElement.className = 'work-record-item';
+    
+    const duration = record.endDate === record.startDate ? 
+      formatDate(record.startDate) : 
+      `${formatDate(record.startDate)} 至 ${formatDate(record.endDate)}`;
+    
+    recordElement.innerHTML = `
+      <div class="work-record-header">
+        <div>
+          <div class="work-record-title">${record.taskName}</div>
+          <div class="work-record-meta">${record.projectName} | ${duration}</div>
+        </div>
+        <div class="work-record-actions">
+          <button class="record-action-btn" onclick="editWorkRecord(${record.id})">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="record-action-btn" onclick="deleteWorkRecord(${record.id})">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+      <div class="work-record-content">
+        <div><strong>工作内容：</strong>${record.description}</div>
+        ${record.achievements ? `<div><strong>成果亮点：</strong>${record.achievements}</div>` : ''}
+      </div>
+      <div class="work-record-tags">
+        ${record.skills.map(skill => `<span class="work-tag">${skill}</span>`).join('')}
+      </div>
+    `;
+    
+    workRecordList.appendChild(recordElement);
+  });
+}
+
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+}
+
+function deleteWorkRecord(id) {
+  if (confirm('确定要删除这条工作记录吗？')) {
+    workRecords = workRecords.filter(record => record.id !== id);
+    saveWorkRecords();
+    renderWorkRecordList();
+    
+    // 同时从知识库中删除对应的记录
+    knowledgeBase = knowledgeBase.filter(item => item.id !== 'work_' + id);
+    saveKnowledgeBase();
+    renderKnowledgeList();
+  }
+}
+
+function editWorkRecord(id) {
+  const record = workRecords.find(r => r.id === id);
+  if (record) {
+    // 填充表单
+    document.getElementById('workTaskName').value = record.taskName;
+    document.getElementById('workProjectName').value = record.projectName;
+    document.getElementById('workStartDate').value = record.startDate;
+    document.getElementById('workEndDate').value = record.endDate;
+    document.getElementById('workDescription').value = record.description;
+    document.getElementById('workAchievements').value = record.achievements || '';
+    document.getElementById('workSkills').value = record.skills.join(', ');
+    
+    // 删除原记录
+    deleteWorkRecord(id);
+    
+    // 滚动到表单
+    document.querySelector('.work-record-form').scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+async function generateSummary() {
+  const year = document.getElementById('summaryYear').value;
+  const type = document.getElementById('summaryType').value;
+  
+  // 筛选指定年份的工作记录
+  const yearRecords = workRecords.filter(record => {
+    const recordYear = new Date(record.startDate).getFullYear().toString();
+    return recordYear === year;
+  });
+  
+  if (yearRecords.length === 0) {
+    document.getElementById('summaryResult').innerHTML = `<p>${year}年度暂无工作记录，请先添加工作记录。</p>`;
+    document.getElementById('summaryResult').style.display = 'block';
+    return;
+  }
+  
+  // 显示生成中状态
+  document.getElementById('summaryResult').innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> AI正在生成年度总结...</p>';
+  document.getElementById('summaryResult').style.display = 'block';
+  
+  try {
+    // 构建工作记录摘要
+    let workSummary = `${year}年度工作记录摘要：\n\n`;
+    yearRecords.forEach((record, index) => {
+      workSummary += `${index + 1}. 【${record.projectName}】${record.taskName}（${formatDate(record.startDate)}）\n`;
+      workSummary += `   工作内容：${record.description}\n`;
+      if (record.achievements) {
+        workSummary += `   成果亮点：${record.achievements}\n`;
+      }
+      workSummary += `   技能应用：${record.skills.join('、')}\n\n`;
+    });
+    
+    // 根据类型构建不同的提示词
+    let prompt = '';
+    switch(type) {
+      case 'personal':
+        prompt = `请根据以下工作记录，为我生成一份${year}年度的个人工作总结。要求：\n1. 概括全年工作成果\n2. 突出个人贡献和成长\n3. 分析不足与改进方向\n4. 展望未来工作计划\n5. 语言专业、条理清晰\n\n${workSummary}`;
+        break;
+      case 'technical':
+        prompt = `请根据以下工作记录，为我生成一份${year}年度的技术能力总结。要求：\n1. 总结技术栈应用情况\n2. 分析技术难点和解决方案\n3. 评估技能成长路径\n4. 规划未来技术学习方向\n5. 语言专业、技术术语准确\n\n${workSummary}`;
+        break;
+      case 'project':
+        prompt = `请根据以下工作记录，为我生成一份${year}年度的项目成果总结。要求：\n1. 概述各项目完成情况\n2. 量化项目成果和影响\n3. 分析项目管理经验\n4. 总结团队协作效果\n5. 语言专业、数据支撑\n\n${workSummary}`;
+        break;
+    }
+    
+    // 调用AI生成总结
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`
+      },
+      body: JSON.stringify({
+        model: MODEL_NAME,
+        messages: [
+          { role: "system", content: "你是一个专业的职场顾问，擅长根据工作记录生成各种类型的总结报告。" },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.7
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API请求失败: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const summary = data.choices[0].message.content;
+    
+    // 显示生成的总结
+    document.getElementById('summaryResult').innerHTML = `
+      <div style="margin-bottom: 12px;">
+        <strong>${year}年度${getSummaryTypeName(type)}：</strong>
+      </div>
+      <div style="white-space: pre-wrap; line-height: 1.6;">${summary}</div>
+      <div style="margin-top: 12px; text-align: center;">
+        <button class="add-knowledge-btn" onclick="copyToClipboard('${summary.replace(/'/g, "\\'")}')">
+          <i class="far fa-copy"></i> 复制总结
+        </button>
+      </div>
+    `;
+    
+  } catch (error) {
+    console.error('生成总结失败:', error);
+    document.getElementById('summaryResult').innerHTML = `<p>生成总结失败：${error.message}</p>`;
+  }
+}
+
+function getSummaryTypeName(type) {
+  switch(type) {
+    case 'personal': return '个人工作总结';
+    case 'technical': return '技术能力总结';
+    case 'project': return '项目成果总结';
+    default: return '工作总结';
+  }
+}
 
     // 设置事件监听器
     function setupEventListeners() {
