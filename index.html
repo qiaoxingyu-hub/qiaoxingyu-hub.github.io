@@ -1169,6 +1169,12 @@
           searchKnowledgeBase();
         }
       });
+      
+      // 清空聊天记录按钮
+      document.getElementById('clearHistoryBtn').addEventListener('click', clearAllChatHistory);
+      
+      // 清空知识库按钮
+      document.getElementById('clearKnowledgeBaseBtn').addEventListener('click', clearKnowledgeBase);
     }
 
     // 自动调整文本区域高度
@@ -1241,49 +1247,87 @@
     }
 
     // 渲染历史列表
-    function renderHistoryList() {
-      historyList.innerHTML = '';
-      
-      chatSessions.forEach(session => {
-        const historyItem = document.createElement('div');
-        historyItem.className = 'history-item';
-        if (session.id === currentSessionId) {
-          historyItem.classList.add('active');
+   // 修改 renderHistoryList 函数
+function renderHistoryList() {
+  historyList.innerHTML = '';
+  
+  chatSessions.forEach(session => {
+    const historyItem = document.createElement('div');
+    historyItem.className = 'history-item';
+    if (session.id === currentSessionId) {
+      historyItem.classList.add('active');
+    }
+    
+    historyItem.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${session.title}</span>
+        <button class="delete-chat-btn" onclick="deleteChatSession('${session.id}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 4px; margin-left: 8px;">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    `;
+    
+    historyItem.addEventListener('click', (e) => {
+      // 防止点击删除按钮时触发切换会话
+      if (!e.target.closest('.delete-chat-btn')) {
+        loadChatSession(session.id);
+        if (window.innerWidth <= 768) {
+          sidebar.classList.remove('open');
         }
-        
-        historyItem.textContent = session.title;
-        historyItem.addEventListener('click', () => {
-          loadChatSession(session.id);
-          if (window.innerWidth <= 768) {
-            sidebar.classList.remove('open');
-          }
-        });
-        
-        historyList.appendChild(historyItem);
-      });
-    }
-
+      }
+    });
+    
+    historyList.appendChild(historyItem);
+  });
+}
+    
     // 加载特定对话会话
-    function loadChatSession(sessionId) {
-      const session = chatSessions.find(s => s.id === sessionId);
-      if (!session) return;
-      
-      currentSessionId = sessionId;
-      conversationHistory = [...session.messages];
-      chatTitle.textContent = session.title;
-      
-      // 清空并重新渲染聊天内容
-      chatContainer.innerHTML = '';
-      session.messages.forEach(msg => {
-        addMessage(msg.role === 'user' ? 'user' : 'ai', msg.content, false);
-      });
-      
-      // 更新历史列表高亮
-      renderHistoryList();
-      
-      // 滚动到底部
-      scrollToBottom();
+    // 加载特定对话会话
+function loadChatSession(sessionId) {
+  const session = chatSessions.find(s => s.id === sessionId);
+  if (!session) return;
+  
+  currentSessionId = sessionId;
+  conversationHistory = [...session.messages];
+  chatTitle.textContent = session.title;
+  
+  // 清空并重新渲染聊天内容
+  chatContainer.innerHTML = '';
+  session.messages.forEach(msg => {
+    addMessage(msg.role === 'user' ? 'user' : 'ai', msg.content, false);
+  });
+  
+  // 更新历史列表高亮
+  renderHistoryList();
+  
+  // 滚动到底部
+  scrollToBottom();
+}
+
+// 删除单个对话会话
+function deleteChatSession(sessionId) {
+  if (confirm('确定要删除这个对话吗？此操作不可恢复！')) {
+    // 从会话列表中移除
+    chatSessions = chatSessions.filter(session => session.id !== sessionId);
+    
+    // 如果删除的是当前会话，需要切换到其他会话或创建新会话
+    if (currentSessionId === sessionId) {
+      if (chatSessions.length > 0) {
+        // 切换到第一个会话
+        loadChatSession(chatSessions[0].id);
+      } else {
+        // 没有其他会话，创建新会话
+        createNewChat();
+      }
     }
+    
+    // 保存更改
+    saveChatSessions();
+    renderHistoryList();
+    
+    alert('对话已删除！');
+  }
+}
 
     // 添加消息到聊天界面
     function addMessage(sender, content, saveToHistory = true) {
@@ -1367,7 +1411,7 @@
       }
     }
 
-    // 发送消息
+    // 发送消息 - 修复知识库检索问题
     async function sendMessage() {
       const message = userInput.value.trim();
       if (!message) return;
@@ -1383,19 +1427,19 @@
       showTypingIndicator();
 
       try {
+        // 从知识库中搜索相关内容 - 改进搜索算法
+        const relevantKnowledge = searchKnowledgeInBase(message);
+        console.log('找到相关知识:', relevantKnowledge);
+        
         // 构建系统提示词
         let systemMessage = "你是一个名叫米小兜的AI助手，回答风格亲切友善、专业且简洁。";
         
-        // 从知识库中搜索相关内容
-        const relevantKnowledge = searchKnowledgeInBase(message);
-        
         // 如果有相关知识，优先使用知识库信息
         if (relevantKnowledge.length > 0) {
-          systemMessage += "\n\n【重要指令】请优先参考以下用户提供的知识库信息来回答问题。这些是用户的真实信息：\n";
+          systemMessage += "\n\n【重要指令】请优先参考以下用户提供的知识库信息来回答问题。这些是用户的真实信息，请直接基于这些信息回答，不要要求用户重复提供：\n";
           relevantKnowledge.forEach((item, index) => {
             systemMessage += `--- 知识条目 ${index + 1} ---\n${item.content}\n\n`;
           });
-          systemMessage += "请直接基于以上知识库信息回答用户问题，不要要求用户重复提供这些信息。";
         }
         
         if (isDeepThinking) {
@@ -1552,7 +1596,7 @@
       voiceButton.classList.remove('listening');
     }
 
-    // 知识库功能
+    // 知识库功能 - 改进搜索算法
     function loadKnowledgeBase() {
       const saved = localStorage.getItem('knowledgeBase');
       if (saved) {
@@ -1603,12 +1647,50 @@
       renderKnowledgeList(filteredKnowledge);
     }
 
+    // 改进的知识库搜索算法
     function searchKnowledgeInBase(query) {
-      const keywords = query.toLowerCase().split(' ');
-      return knowledgeBase.filter(item => {
+      const keywords = query.toLowerCase().split(/\s+/).filter(word => word.length > 1);
+      
+      if (keywords.length === 0) return [];
+      
+      // 计算相关性分数
+      const scoredKnowledge = knowledgeBase.map(item => {
+        let score = 0;
         const content = item.content.toLowerCase();
-        return keywords.some(keyword => content.includes(keyword));
-      }).slice(0, 3); // 返回最相关的3条
+        const tags = item.tags.map(tag => tag.toLowerCase());
+        
+        // 关键词在内容中匹配
+        keywords.forEach(keyword => {
+          if (content.includes(keyword)) {
+            score += 3; // 内容匹配权重更高
+          }
+        });
+        
+        // 关键词在标签中匹配
+        keywords.forEach(keyword => {
+          if (tags.some(tag => tag.includes(keyword))) {
+            score += 2;
+          }
+        });
+        
+        // 完全匹配名称关键词（如"名字"、"姓名"、"称呼"等）
+        const nameKeywords = ['名字', '姓名', '称呼', '叫什么', '我是谁'];
+        if (nameKeywords.some(nameKey => query.includes(nameKey))) {
+          // 如果知识库中包含姓名信息，提高分数
+          if (content.includes('张三') || content.includes('名字') || content.includes('姓名')) {
+            score += 10;
+          }
+        }
+        
+        return { item, score };
+      });
+      
+      // 过滤掉分数为0的，按分数排序，返回前5个
+      return scoredKnowledge
+        .filter(({ score }) => score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 5)
+        .map(({ item }) => item);
     }
 
     function renderKnowledgeList(knowledgeArray = knowledgeBase) {
@@ -1629,10 +1711,57 @@
             <span>标签: ${item.tags.join(', ') || '无'}</span>
             <span>${new Date(item.createdAt).toLocaleDateString()}</span>
           </div>
+          <div style="margin-top: 8px; text-align: right;">
+            <button class="delete-knowledge-btn" onclick="deleteKnowledgeItem(${item.id})" style="background-color: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+              <i class="fas fa-trash"></i> 删除
+            </button>
+          </div>
         `;
         
         knowledgeList.appendChild(knowledgeItem);
       });
+    }
+
+    // 删除知识条目
+    function deleteKnowledgeItem(id) {
+      if (confirm('确定要删除这条知识吗？此操作不可恢复！')) {
+        knowledgeBase = knowledgeBase.filter(item => item.id !== id);
+        saveKnowledgeBase();
+        renderKnowledgeList();
+        alert('知识条目已删除！');
+      }
+    }
+
+    // 清空整个知识库
+    function clearKnowledgeBase() {
+      if (confirm('确定要清空整个知识库吗？此操作将删除所有知识条目，不可恢复！')) {
+        knowledgeBase = [];
+        saveKnowledgeBase();
+        renderKnowledgeList();
+        alert('知识库已清空！');
+      }
+    }
+
+    // 清空所有聊天记录
+    function clearAllChatHistory() {
+      if (confirm('确定要清空所有聊天记录吗？此操作不可恢复！')) {
+        chatSessions = [];
+        conversationHistory = [];
+        currentSessionId = null;
+        
+        // 更新UI
+        chatContainer.innerHTML = '';
+        historyList.innerHTML = '';
+        chatTitle.textContent = '新对话';
+        
+        // 保存更改
+        saveChatSessions();
+        
+        // 添加欢迎消息
+        addMessage('ai', '你好！我是米小兜，你的AI小伙伴，有什么可以帮助你的吗？');
+        
+        alert('聊天记录已清空！');
+      }
     }
 
     // 工作记录功能
