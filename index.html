@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>生日快乐宝贝生日快乐！</title>
+    <title>生日快乐生日快乐宝贝生日快乐！</title>
     <!-- Tailwind CSS v3 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <!-- GSAP 动画库 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <!-- 自定义 Tailwind 配置 -->
+    <!-- 自定义 Tailwind配置 -->
     <script>
         tailwind.config = {
             theme: {
@@ -144,7 +144,7 @@
             
             <div class="bg-pink-100 rounded-xl p-6 mb-6">
                 <p id="birthdayMessage" class="text-lg text-pink-900 italic">
-                    亲爱的宝贝，愿你的生日充满阳光、欢笑和爱！愿你每一天都像今天一样快乐！🎉🎂🎈
+                    <!-- 生日祝福将通过JavaScript动态加载 -->
                 </p>
             </div>
             
@@ -175,16 +175,37 @@
                 <i class="fa fa-music mr-2"></i>生日音乐
             </h2>
             
+            <!-- 音频元素 -->
+            <audio id="birthdayAudio" preload="auto"></audio>
+            
             <div class="flex flex-wrap justify-center gap-4">
-                <button class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-full cursor-pointer transition-all duration-300 flex items-center">
+                <button id="playHappyBirthday" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-full cursor-pointer transition-all duration-300 flex items-center">
                     <i class="fa fa-play mr-2"></i>生日快乐歌
                 </button>
-                <button class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-full cursor-pointer transition-all duration-300 flex items-center">
+                <button id="playChildrenSong" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-full cursor-pointer transition-all duration-300 flex items-center">
                     <i class="fa fa-play mr-2"></i>儿童欢乐曲
                 </button>
-                <button class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-full cursor-pointer transition-all duration-300 flex items-center">
-                    <i class="fa fa-upload mr-2"></i>上传音乐
-                </button>
+                <div class="relative">
+                    <label for="musicUpload" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-full cursor-pointer transition-all duration-300 flex items-center">
+                        <i class="fa fa-upload mr-2"></i>上传音乐
+                    </label>
+                    <input type="file" id="musicUpload" accept="audio/*" class="hidden">
+                </div>
+            </div>
+            
+            <!-- 音频控制器 -->
+            <div id="audioControls" class="mt-6 hidden">
+                <div class="flex items-center gap-4">
+                    <button id="playPauseBtn" class="bg-pink-600 hover:bg-pink-700 text-white rounded-full w-10 h-10 flex items-center justify-center">
+                        <i class="fa fa-play"></i>
+                    </button>
+                    <div class="flex-1">
+                        <input type="range" id="volumeSlider" min="0" max="100" value="80" class="w-full">
+                    </div>
+                    <span id="currentTime" class="text-pink-600 font-medium">00:00</span>
+                    <span class="text-pink-600">/</span>
+                    <span id="totalTime" class="text-pink-600 font-medium">00:00</span>
+                </div>
             </div>
         </section>
     </div>
@@ -196,6 +217,15 @@
     <div id="photoViewer" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center">
         <button id="closeViewerBtn" class="absolute top-4 right-4 text-white text-3xl hover:text-pink-300 cursor-pointer">
             <i class="fa fa-times"></i>
+        </button>
+        <button id="prevPhotoBtn" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white text-3xl rounded-full w-12 h-12 flex items-center justify-center hover:scale-110 transition-all duration-300">
+            <i class="fa fa-chevron-left"></i>
+        </button>
+        <button id="nextPhotoBtn" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white text-3xl rounded-full w-12 h-12 flex items-center justify-center hover:scale-110 transition-all duration-300">
+            <i class="fa fa-chevron-right"></i>
+        </button>
+        <button id="deletePhotoBtn" class="absolute bottom-4 right-4 bg-red-500/80 hover:bg-red-600 text-white text-xl rounded-full px-4 py-2 flex items-center justify-center hover:scale-105 transition-all duration-300">
+            <i class="fa fa-trash mr-2"></i> 删除照片
         </button>
         <img id="viewerImage" src="" alt="大图预览" class="max-w-[90%] max-h-[90vh] object-contain">
     </div>
@@ -217,8 +247,8 @@
     </div>
     
     <script>
-        // 示例照片数据
-        const photos = [
+        // 使用sessionStorage代替localStorage，避免跨域问题
+        let photos = JSON.parse(sessionStorage.getItem('birthdayPhotos')) || [
             { url: 'https://p11-doubao-search-sign.byteimg.com/tos-cn-i-6w9my0ksvp/f0c3712a8ce5479c92ff88ca84e1deff~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1777291810&x-signature=gNblHFNyPk3GwWYLpvpaWnik1y4%3D', title: '生日蛋糕1' },
             { url: 'https://p11-doubao-search-sign.byteimg.com/tos-cn-i-6w9my0ksvp/95881b38b944401c95b674ce2572ac7d~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1777291810&x-signature=BWc%2FXcnApLrpP84WHYSioOjv7So%3D', title: '生日蛋糕2' },
             { url: 'https://p11-doubao-search-sign.byteimg.com/tos-cn-i-6w9my0ksvp/0cfc9e098f334121bb4d638c65324bfe~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1777291810&x-signature=aBWE6LA7xGu2XoVXx0x4Zzupnh4%3D', title: '生日蛋糕3' },
@@ -233,6 +263,12 @@
             { url: 'https://p3-doubao-search-sign.byteimg.com/labis/e2e16ee9de25079f87647188c0a27ae9~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1777291810&x-signature=XxdC6BaeZQn%2B6x%2FVPU4v2W1ewFI%3D', title: '生日礼物3' }
         ];
         
+        // 使用sessionStorage存储生日祝福
+        let birthdayMessage = sessionStorage.getItem('birthdayMessage') || '亲爱的宝贝，愿你的生日充满阳光、欢笑和爱！愿你每一天都像今天一样快乐！🎉🎂🎈';
+        
+        // 音频元素
+        let audioElement = null;
+        
         // 当前轮播索引
         let currentSlide = 0;
         
@@ -244,7 +280,6 @@
         const photoViewer = document.getElementById('photoViewer');
         const viewerImage = document.getElementById('viewerImage');
         const closeViewerBtn = document.getElementById('closeViewerBtn');
-        const birthdayMessage = document.getElementById('birthdayMessage');
         const editMessageBtn = document.getElementById('editMessageBtn');
         const messageModal = document.getElementById('messageModal');
         const modalMessageInput = document.getElementById('modalMessageInput');
@@ -348,7 +383,7 @@
         
         // 打开祝福编辑弹窗
         function openMessageEditor() {
-            modalMessageInput.value = birthdayMessage.textContent.trim();
+            modalMessageInput.value = document.getElementById('birthdayMessage').textContent.trim();
             messageModal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
@@ -363,7 +398,15 @@
         function saveMessage() {
             const newMessage = modalMessageInput.value.trim();
             if (newMessage) {
-                birthdayMessage.textContent = newMessage;
+                // 更新显示
+                document.getElementById('birthdayMessage').textContent = newMessage;
+                
+                // 保存到sessionStorage
+                sessionStorage.setItem('birthdayMessage', newMessage);
+                
+                // 更新变量
+                birthdayMessage = newMessage;
+                
                 closeMessageEditor();
                 
                 // 显示保存成功动画
@@ -403,8 +446,8 @@
                         // 添加到照片数组
                         photos.push(newPhoto);
                         
-                        // 保存到localStorage
-                        savePhotosToLocalStorage();
+                        // 保存到sessionStorage
+                        savePhotosToSessionStorage();
                         
                         // 更新UI
                         updatePhotoDisplay();
@@ -432,9 +475,9 @@
             }
         }
         
-        // 保存照片数据到localStorage
-        function savePhotosToLocalStorage() {
-            localStorage.setItem('birthdayPhotos', JSON.stringify(photos));
+        // 保存照片数据到sessionStorage
+        function savePhotosToSessionStorage() {
+            sessionStorage.setItem('birthdayPhotos', JSON.stringify(photos));
         }
         
         // 更新照片显示
@@ -458,8 +501,8 @@
             // 从数组中删除照片
             photos.splice(index, 1);
             
-            // 保存到localStorage
-            savePhotosToLocalStorage();
+            // 保存到sessionStorage
+            savePhotosToSessionStorage();
             
             // 更新UI
             updatePhotoDisplay();
@@ -533,30 +576,6 @@
             }, 10000);
         }
         
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            // 初始化轮播和网格
-            initCarousel();
-            initPhotoGrid();
-            
-            // 绑定事件
-            prevBtn.addEventListener('click', prevSlide);
-            nextBtn.addEventListener('click', nextSlide);
-            closeViewerBtn.addEventListener('click', closePhotoViewer);
-            editMessageBtn.addEventListener('click', openMessageEditor);
-            modalCancelBtn.addEventListener('click', closeMessageEditor);
-            modalSaveBtn.addEventListener('click', saveMessage);
-            photoUpload.addEventListener('change', handlePhotoUpload);
-            
-            // 照片查看器导航按钮
-            document.getElementById('prevPhotoBtn').addEventListener('click', showPrevPhoto);
-            document.getElementById('nextPhotoBtn').addEventListener('click', showNextPhoto);
-            document.getElementById('deletePhotoBtn').addEventListener('click', deleteCurrentPhoto);
-            
-            // 键盘导航
-            document.addEventListener('keydown', handleKeyNavigation);
-        });
-        
         // 显示上一张照片
         function showPrevPhoto() {
             const currentIndex = parseInt(photoViewer.dataset.currentIndex);
@@ -599,6 +618,217 @@
                 }
             }
         }
+        
+        // 播放音频
+        function playAudio(type) {
+            // 模拟音频源
+            const audioSources = {
+                '生日快乐歌': 'https://example.com/happy-birthday.mp3',
+                '儿童欢乐曲': 'https://example.com/children-song.mp3'
+            };
+            
+            // 检查是否支持音频播放
+            if (!audioElement) {
+                showNotification('您的浏览器不支持音频播放', 'error');
+                return;
+            }
+            
+            try {
+                // 设置音频源
+                audioElement.src = audioSources[type];
+                
+                // 尝试播放
+                audioElement.play()
+                    .then(() => {
+                        document.getElementById('playPauseBtn').innerHTML = '<i class="fa fa-pause"></i>';
+                        showNotification(`正在播放: ${type}`, 'success');
+                    })
+                    .catch(error => {
+                        console.error('播放失败:', error);
+                        showNotification('请点击页面后再尝试播放音乐', 'warning');
+                        
+                        // 提供一个备用按钮
+                        const playButton = document.createElement('div');
+                        playButton.className = 'fixed bottom-20 right-4 bg-pink-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-float';
+                        playButton.innerHTML = '<i class="fa fa-play mr-2"></i>点击播放音乐';
+                        playButton.addEventListener('click', () => {
+                            audioElement.play()
+                                .then(() => {
+                                    document.getElementById('playPauseBtn').innerHTML = '<i class="fa fa-pause"></i>';
+                                    playButton.remove();
+                                    showNotification(`正在播放: ${type}`, 'success');
+                                })
+                                .catch(err => {
+                                    showNotification('播放失败，请稍后再试', 'error');
+                                    console.error('再次尝试播放失败:', err);
+                                });
+                        });
+                        document.body.appendChild(playButton);
+                    });
+            } catch (error) {
+                console.error('音频播放错误:', error);
+                showNotification('音频播放出错，请稍后再试', 'error');
+            }
+        }
+        
+        // 处理音乐上传
+        function handleMusicUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        audioElement.src = e.target.result;
+                        audioElement.play()
+                            .then(() => {
+                                document.getElementById('playPauseBtn').innerHTML = '<i class="fa fa-pause"></i>';
+                                showNotification('正在播放您上传的音乐', 'success');
+                            })
+                            .catch(error => {
+                                console.error('播放上传音乐失败:', error);
+                                showNotification('请点击页面后再尝试播放音乐', 'warning');
+                            });
+                    } catch (error) {
+                        console.error('处理上传音乐错误:', error);
+                        showNotification('无法处理上传的音乐文件', 'error');
+                    }
+                };
+                
+                reader.onerror = function() {
+                    showNotification('读取音乐文件时出错', 'error');
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // 切换播放/暂停
+        function togglePlayPause() {
+            if (!audioElement) return;
+            
+            try {
+                if (audioElement.paused) {
+                    audioElement.play()
+                        .then(() => {
+                            document.getElementById('playPauseBtn').innerHTML = '<i class="fa fa-pause"></i>';
+                        })
+                        .catch(error => {
+                            console.error('播放失败:', error);
+                            showNotification('请点击页面后再尝试播放音乐', 'warning');
+                        });
+                } else {
+                    audioElement.pause();
+                    document.getElementById('playPauseBtn').innerHTML = '<i class="fa fa-play"></i>';
+                }
+            } catch (error) {
+                console.error('切换播放状态错误:', error);
+                showNotification('操作出错，请稍后再试', 'error');
+            }
+        }
+        
+        // 调整音量
+        function adjustVolume() {
+            if (!audioElement) return;
+            
+            try {
+                const volume = document.getElementById('volumeSlider').value / 100;
+                audioElement.volume = volume;
+            } catch (error) {
+                console.error('调整音量错误:', error);
+            }
+        }
+        
+        // 更新音频进度
+        function updateAudioProgress() {
+            if (!audioElement) return;
+            
+            try {
+                const currentMinutes = Math.floor(audioElement.currentTime / 60);
+                const currentSeconds = Math.floor(audioElement.currentTime % 60);
+                const totalMinutes = Math.floor(audioElement.duration / 60);
+                const totalSeconds = Math.floor(audioElement.duration % 60);
+                
+                document.getElementById('currentTime').textContent = 
+                    `${currentMinutes.toString().padStart(2, '0')}:${currentSeconds.toString().padStart(2, '0')}`;
+                document.getElementById('totalTime').textContent = 
+                    `${totalMinutes.toString().padStart(2, '0')}:${totalSeconds.toString().padStart(2, '0')}`;
+            } catch (error) {
+                // 忽略NaN错误
+                if (!isNaN(error)) {
+                    console.error('更新音频进度错误:', error);
+                }
+            }
+        }
+        
+        // 显示通知
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            
+            // 设置样式
+            let bgColor = 'bg-blue-500';
+            if (type === 'success') bgColor = 'bg-green-500';
+            if (type === 'error') bgColor = 'bg-red-500';
+            if (type === 'warning') bgColor = 'bg-yellow-500';
+            
+            notification.className = `fixed bottom-4 right-4 ${bgColor} text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-float`;
+            notification.textContent = message;
+            
+            // 添加到页面
+            document.body.appendChild(notification);
+            
+            // 3秒后移除
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化轮播和网格
+            initCarousel();
+            initPhotoGrid();
+            
+            // 加载保存的生日祝福
+            document.getElementById('birthdayMessage').textContent = birthdayMessage;
+            
+            // 绑定事件
+            prevBtn.addEventListener('click', prevSlide);
+            nextBtn.addEventListener('click', nextSlide);
+            closeViewerBtn.addEventListener('click', closePhotoViewer);
+            editMessageBtn.addEventListener('click', openMessageEditor);
+            modalCancelBtn.addEventListener('click', closeMessageEditor);
+            modalSaveBtn.addEventListener('click', saveMessage);
+            photoUpload.addEventListener('change', handlePhotoUpload);
+            
+            // 照片查看器导航按钮
+            document.getElementById('prevPhotoBtn').addEventListener('click', showPrevPhoto);
+            document.getElementById('nextPhotoBtn').addEventListener('click', showNextPhoto);
+            document.getElementById('deletePhotoBtn').addEventListener('click', deleteCurrentPhoto);
+            
+            // 键盘导航
+            document.addEventListener('keydown', handleKeyNavigation);
+            
+            // 音频相关事件
+            document.getElementById('playHappyBirthday').addEventListener('click', () => playAudio('生日快乐歌'));
+            document.getElementById('playChildrenSong').addEventListener('click', () => playAudio('儿童欢乐曲'));
+            document.getElementById('musicUpload').addEventListener('change', handleMusicUpload);
+            document.getElementById('playPauseBtn').addEventListener('click', togglePlayPause);
+            document.getElementById('volumeSlider').addEventListener('input', adjustVolume);
+            
+            // 获取音频元素
+            audioElement = document.getElementById('birthdayAudio');
+            
+            // 音频时间更新事件
+            audioElement.addEventListener('timeupdate', updateAudioProgress);
+            
+            // 音频结束事件
+            audioElement.addEventListener('ended', () => {
+                document.getElementById('playPauseBtn').innerHTML = '<i class="fa fa-play"></i>';
+            });
+            
+            // 显示音频控制器
+            document.getElementById('audioControls').classList.remove('hidden');
             
             // 点击页面创建气球和彩带
             document.addEventListener('click', (event) => {
