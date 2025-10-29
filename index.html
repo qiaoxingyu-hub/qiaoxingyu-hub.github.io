@@ -2,453 +2,1241 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>米小兜AI助手</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    :root {
+      --primary: #10a37f;
+      --primary-light: #1abc9c;
+      --primary-dark: #0d8c6c;
+      --secondary: #3498db;
+      --bg-light: #f7f7f8;
+      --bg-white: #ffffff;
+      --bg-panel: #f9f9f9;
+      --text-primary: #1f2937;
+      --text-secondary: #6b7280;
+      --text-muted: #9ca3af;
+      --border-color: #e5e7eb;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      --radius: 8px;
+    }
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
-    :root {
-      --primary: #5E81F4;
-      --primary-light: #8EA7F9;
-      --primary-dark: #3D63D4;
-      --secondary: #FF7AC6;
-      --bg-light: #F5F7FF;
-      --bg-white: #FFFFFF;
-      --text-dark: #2E384D;
-      --text-light: #8C94A7;
-      --shadow: 0 10px 30px rgba(94, 129, 244, 0.15);
-      --radius: 16px;
-    }
-
     body {
-      font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
-      background: linear-gradient(135deg, #F5F7FF 0%, #E6EBFF 100%);
-      min-height: 100vh;
-      padding: 20px;
-      color: var(--text-dark);
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-primary);
+      line-height: 1.5;
+      overflow-x: hidden;
+      height: 100vh;
     }
 
-    .container {
-      width: 100%;
-      max-width: 800px;
-      background: var(--bg-white);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
+    .app-container {
+      display: flex;
+      height: 100vh;
+      max-width: 100%;
       overflow: hidden;
+    }
+
+    /* 左侧边栏样式 */
+    .sidebar {
+      width: 260px;
+      background-color: var(--bg-white);
+      border-right: 1px solid var(--border-color);
       display: flex;
       flex-direction: column;
-      height: 90vh;
+      transition: transform 0.3s ease;
+      z-index: 100;
     }
 
-    .header {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .new-chat-btn {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--primary);
       color: white;
-      padding: 20px 30px;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.2s;
+      font-weight: 500;
+    }
+
+    .new-chat-btn:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .history-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    .history-item {
+      padding: 12px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: background-color 0.2s;
+    }
+
+    .history-item:hover {
+      background-color: var(--bg-light);
+    }
+
+    .history-item.active {
+      background-color: rgba(16, 163, 127, 0.1);
+      color: var(--primary);
+    }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border-color);
+      font-size: 0.8rem;
+      color: var(--text-muted);
       text-align: center;
+    }
+
+    /* 主内容区域 */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg-white);
       position: relative;
     }
 
-    .header h1 {
-      font-size: 1.8rem;
-      font-weight: 600;
-      margin-bottom: 5px;
-    }
-
-    .header p {
-      font-size: 0.9rem;
-      opacity: 0.9;
-    }
-
-    .status-indicator {
-      position: absolute;
-      top: 20px;
-      right: 20px;
+    .chat-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border-color);
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      background: rgba(255, 255, 255, 0.2);
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 0.8rem;
+      background-color: var(--bg-white);
     }
 
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #4CD964;
-      margin-right: 8px;
-    }
-
-    /* 应用按钮样式 */
-    .app-btn {
-      display: inline-block;
-      padding: 10px 20px;
-      background: var(--primary);
-      color: white;
-      border-radius: 8px;
-      text-decoration: none;
-      font-size: 16px;
-      line-height: 1.2;
-      box-shadow: 0 2px 6px rgba(94, 129, 244, 0.35);
-      transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
-      margin-top: 10px;
+    .mobile-menu-btn {
+      display: none;
+      background: none;
       border: none;
+      color: var(--text-primary);
+      font-size: 1.2rem;
       cursor: pointer;
     }
-    
-    .app-btn:hover {
-      transform: translateY(-1px);
-      background: var(--primary-dark);
-      box-shadow: 0 6px 16px rgba(94, 129, 244, 0.35);
-      color: white;
-    }
-    
-    .app-btn:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 6px rgba(94, 129, 244, 0.35);
+
+    .chat-title {
+      font-size: 1.2rem;
+      font-weight: 600;
     }
 
-    /* 聊天区域样式 */
     .chat-container {
       flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
-      overflow: hidden;
-    }
-
-    #chat {
-      flex: 1;
       overflow-y: auto;
-      padding: 10px;
-      margin-bottom: 20px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
+      background-color: var(--bg-white);
     }
 
     .message {
-      max-width: 80%;
-      padding: 12px 18px;
-      margin-bottom: 15px;
-      border-radius: 18px;
-      line-height: 1.4;
-      position: relative;
-      animation: fadeIn 0.3s ease;
+      padding: 24px 0;
     }
 
-    .user-message {
-      align-self: flex-end;
-      background: var(--primary);
+    .message-user {
+      background-color: var(--bg-white);
+    }
+
+    .message-ai {
+      background-color: var(--bg-white);
+    }
+
+    .message-content {
+      max-width: 768px;
+      margin: 0 auto;
+      display: flex;
+      gap: 16px;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .avatar-user {
+      background-color: var(--secondary);
       color: white;
-      border-bottom-right-radius: 6px;
     }
 
-    .ai-message {
-      align-self: flex-start;
-      background: var(--bg-light);
-      color: var(--text-dark);
-      border-bottom-left-radius: 6px;
+    .avatar-ai {
+      background-color: #ff9f43;
+      color: white;
     }
 
-    .message-time {
-      font-size: 0.7rem;
-      opacity: 0.7;
-      margin-top: 5px;
-      text-align: right;
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
-    .ai-message .message-time {
-      text-align: left;
+    .message-text {
+      flex: 1;
+      padding-top: 4px;
+    }
+
+    .message-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .action-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .action-btn:hover {
+      color: var(--primary);
     }
 
     /* 输入区域 */
     .input-container {
+      padding: 16px 24px;
+      position: relative;
+      max-width: 768px;
+      margin: 0 auto;
+      width: 100%;
+      border-top: 1px solid var(--border-color);
+      background-color: var(--bg-white);
+    }
+
+    .input-box {
+      position: relative;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      background-color: var(--bg-white);
+      box-shadow: var(--shadow);
+    }
+
+    .input-options {
       display: flex;
-      background: var(--bg-light);
-      border-radius: 24px;
-      padding: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .option-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.8rem;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .option-btn.active {
+      background-color: rgba(16, 163, 127, 0.1);
+      color: var(--primary);
+    }
+
+    .option-btn:hover {
+      background-color: var(--bg-light);
+    }
+
+    .input-area {
+      display: flex;
+      padding: 12px;
     }
 
     #userInput {
       flex: 1;
+      background: none;
       border: none;
-      background: transparent;
-      padding: 12px 20px;
+      color: var(--text-primary);
       font-size: 1rem;
+      resize: none;
       outline: none;
-      color: var(--text-dark);
+      max-height: 200px;
+      min-height: 24px;
+      line-height: 1.5;
     }
 
     #userInput::placeholder {
-      color: var(--text-light);
+      color: var(--text-muted);
     }
 
-    .action-buttons {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn {
-      background: var(--primary);
+    .send-btn {
+      background-color: var(--primary);
       color: white;
       border: none;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      align-self: flex-end;
+      margin-left: 12px;
+    }
+
+    .send-btn:hover {
+      background-color: var(--primary-light);
+    }
+
+    .send-btn:disabled {
+      background-color: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    .input-footer {
       display: flex;
       justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 8px rgba(94, 129, 244, 0.3);
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(94, 129, 244, 0.4);
-    }
-
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    .btn-voice {
-      background: var(--secondary);
-      box-shadow: 0 4px 8px rgba(255, 122, 198, 0.3);
-    }
-
-    .btn-voice.listening {
-      animation: pulse 1.5s infinite;
-    }
-
-    .btn-speak {
-      background: var(--primary-light);
-    }
-
-    .btn:disabled {
-      background: var(--text-light);
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
+      padding: 8px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
     }
 
     .voice-status {
       text-align: center;
-      margin: 10px 0;
+      margin: 8px 0;
       color: var(--primary);
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       min-height: 20px;
     }
 
-    /* 微信提示 */
-    .wechat-tip {
-      background: #FFF6E0;
-      border: 1px solid #FFD351;
+    /* 右侧应用栏 */
+    .apps-sidebar {
+      width: 220px;
+      background-color: var(--bg-white);
+      border-left: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .apps-header {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-primary);
+    }
+
+    .app-card {
+      background-color: var(--bg-light);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+      transition: all 0.2s;
+      border: 1px solid var(--border-color);
+    }
+
+    .app-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .app-icon {
+      width: 40px;
+      height: 40px;
       border-radius: 8px;
-      padding: 10px 15px;
-      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      font-size: 1.2rem;
+    }
+
+    .edu-app .app-icon {
+      background-color: #3498db;
+      color: white;
+    }
+
+    .knowledge-app .app-icon {
+      background-color: #9b59b6;
+      color: white;
+    }
+
+    .app-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .app-description {
       font-size: 0.85rem;
-      color: #8C6C0F;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .app-btn {
+      width: 100%;
+      padding: 8px;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: background-color 0.2s;
+    }
+
+    .app-btn:hover {
+      background-color: var(--primary-dark);
+    }
+
+    /* 知识库模态框 */
+    .modal {
       display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
     }
 
-    /* 语音功能提示 */
-    .voice-help {
-      background: #E8F4FD;
-      border: 1px solid #B8D9F0;
-      border-radius: 8px;
-      padding: 12px 15px;
-      margin-bottom: 15px;
-      font-size: 0.85rem;
-      color: #2C5B8A;
+    .modal-content {
+      background-color: var(--bg-white);
+      border-radius: var(--radius);
+      width: 90%;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     }
 
-    .voice-help ul {
-      margin: 8px 0;
-      padding-left: 20px;
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    .voice-help li {
-      margin-bottom: 5px;
+    .modal-title {
+      font-size: 1.2rem;
+      font-weight: 600;
     }
 
-    /* 动画 */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .knowledge-manager {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .knowledge-section {
+      background-color: var(--bg-light);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+
+    .knowledge-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      resize: vertical;
+      min-height: 100px;
+      font-family: inherit;
+    }
+
+    .knowledge-tags {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      margin-top: 10px;
+    }
+
+    .add-knowledge-btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background-color 0.2s;
+    }
+
+    .add-knowledge-btn:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .knowledge-list {
+      margin-top: 16px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .knowledge-item {
+      background-color: var(--bg-white);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .knowledge-content {
+      margin-bottom: 8px;
+    }
+
+    .knowledge-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .search-knowledge {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      margin-bottom: 10px;
+    }
+
+    /* 移动端优化 */
+    @media (max-width: 1024px) {
+      .apps-sidebar {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: absolute;
+        height: 100%;
+        transform: translateX(-100%);
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .mobile-menu-btn {
+        display: block;
+      }
+      
+      .message-content {
+        padding: 0 16px;
+      }
+      
+      .input-container {
+        padding: 12px;
+      }
+      
+      .chat-header {
+        padding: 12px;
+      }
+      
+      .modal-content {
+        width: 95%;
+        height: 95%;
+      }
+    }
+
+    /* 加载动画 */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--text-muted);
+      animation: typing 1.4s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(1) {
+      animation-delay: -0.32s;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: -0.16s;
+    }
+
+    @keyframes typing {
+      0%, 80%, 100% {
+        transform: scale(0.8);
+        opacity: 0.5;
+      }
+      40% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* 语音按钮 */
+    .voice-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.2rem;
+      padding: 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .voice-btn:hover {
+      background-color: var(--bg-light);
+      color: var(--primary);
+    }
+
+    .voice-btn.listening {
+      color: #e74c3c;
+      animation: pulse 1.5s infinite;
     }
 
     @keyframes pulse {
-      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 122, 198, 0.7); }
-      70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 122, 198, 0); }
-      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 122, 198, 0); }
-    }
-
-    /* 响应式设计 */
-    @media (max-width: 600px) {
-      .container {
-        height: 95vh;
+      0% {
+        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4);
       }
-      
-      .header {
-        padding: 15px 20px;
+      70% {
+        box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
       }
-      
-      .header h1 {
-        font-size: 1.5rem;
+      100% {
+        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
       }
-      
-      .chat-container {
-        padding: 15px;
-      }
-      
-      .message {
-        max-width: 90%;
-      }
-    }
-
-    /* 滚动条样式 */
-    #chat::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    #chat::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 10px;
-    }
-
-    #chat::-webkit-scrollbar-thumb {
-      background: var(--primary-light);
-      border-radius: 10px;
-    }
-
-    #chat::-webkit-scrollbar-thumb:hover {
-      background: var(--primary);
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- 头部 -->
-    <div class="header">
-      <h1>米小兜AI助手</h1>
-      <p>您的智能对话伙伴</p>
-      <!-- 添加应用跳转按钮 -->
-      <a href="edu/index.html" class="app-btn">
-        📚 打开学习应用
-      </a>
-      <div class="status-indicator">
-        <div class="status-dot"></div>
-        <span>在线</span>
+  <div class="app-container">
+    <!-- 左侧边栏 -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <button class="new-chat-btn" id="newChatBtn">
+          <i class="fas fa-plus"></i>
+          新对话
+        </button>
+      </div>
+      <div class="history-list" id="historyList">
+        <!-- 对话历史将在这里动态生成 -->
+      </div>
+      <div class="sidebar-footer">
+        <p>米小兜AI助手 v1.0</p>
       </div>
     </div>
 
-    <!-- 聊天区域 -->
-    <div class="chat-container">
-      <div class="wechat-tip" id="wechatTip">
-        提示：在微信中首次使用语音功能，需要点击"允许"使用麦克风权限。
+    <!-- 主内容区域 -->
+    <div class="main-content">
+      <div class="chat-header">
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="chat-title" id="chatTitle">新对话</div>
+        <div></div> <!-- 占位元素 -->
       </div>
-      
-      <div class="voice-help" id="voiceHelp">
-        <strong>语音功能使用提示：</strong>
-        <ul>
-          <li>语音功能在Chrome、Edge等浏览器中效果最佳</li>
-          <li>首次使用需要授权麦克风权限</li>
-          <li>确保麦克风设备正常工作</li>
-          <li>在安静环境中使用效果更好</li>
-        </ul>
-      </div>
-      
-      <div id="chat">
-        <div class="message ai-message">
-          嗨！我是米小兜，您的AI助手。有什么我可以帮您的吗？
-          <div class="message-time">刚刚</div>
+
+      <div class="chat-container" id="chatContainer">
+        <!-- 欢迎消息 -->
+        <div class="message message-ai">
+          <div class="message-content">
+            <div class="avatar avatar-ai">
+              <i class="fas fa-child"></i>
+            </div>
+            <div class="message-text">
+              <p>你好！我是米小兜，你的AI小伙伴，很高兴为你服务！</p>
+              <p>我可以帮助你：</p>
+              <ul>
+                <li>回答各种问题</li>
+                <li>使用语音输入（点击麦克风图标）</li>
+                <li>开启深度思考模式获得更详细的回答</li>
+                <li>开启联网搜索获取最新信息</li>
+                <li>访问右侧的应用中心使用更多功能</li>
+              </ul>
+              <div class="message-actions">
+                <button class="action-btn" onclick="copyToClipboard(this)">
+                  <i class="far fa-copy"></i> 复制
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      
+
+      <!-- 语音状态显示 -->
       <div class="voice-status" id="voiceStatus"></div>
-      
+
+      <!-- 输入区域 -->
       <div class="input-container">
-        <input type="text" id="userInput" placeholder="输入您的问题...">
-        <div class="action-buttons">
-          <button class="btn btn-voice" id="voiceButton" onclick="toggleVoiceRecognition()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-              <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-            </svg>
-          </button>
-          <button class="btn" onclick="sendMessage()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-            </svg>
-          </button>
-          <button class="btn btn-speak" onclick="speakLastMessage()" id="speakButton" disabled>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-            </svg>
-          </button>
+        <div class="input-box">
+          <div class="input-options">
+            <button class="option-btn" id="deepThinkingBtn">
+              <i class="fas fa-brain"></i> 深度思考
+            </button>
+            <button class="option-btn" id="webSearchBtn">
+              <i class="fas fa-search"></i> 联网搜索
+            </button>
+          </div>
+          <div class="input-area">
+            <textarea id="userInput" placeholder="输入你的问题..." rows="1"></textarea>
+            <button class="voice-btn" id="voiceButton">
+              <i class="fas fa-microphone"></i>
+            </button>
+            <button class="send-btn" id="sendButton">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+        <div class="input-footer">
+          <p>米小兜可以犯错，请核实重要信息</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧应用栏 -->
+    <div class="apps-sidebar">
+      <div class="apps-header">应用中心</div>
+      
+      <!-- 职教培训应用 -->
+      <div class="app-card edu-app">
+        <div class="app-icon">
+          <i class="fas fa-graduation-cap"></i>
+        </div>
+        <div class="app-title">职教培训</div>
+        <div class="app-description">
+          访问职业教育培训资源，学习专业技能和知识
+        </div>
+        <button class="app-btn" onclick="window.open('edu/index.html', '_blank')">
+          打开应用
+        </button>
+      </div>
+      
+      <!-- 知识库应用 -->
+      <div class="app-card knowledge-app">
+        <div class="app-icon">
+          <i class="fas fa-database"></i>
+        </div>
+        <div class="app-title">知识库</div>
+        <div class="app-description">
+          管理你的个人知识库，让AI学习你的专业知识
+        </div>
+        <button class="app-btn" id="knowledgeBaseBtn">
+          打开知识库
+        </button>
+      </div>
+      
+      <!-- 留白区域，用于未来添加更多应用 -->
+      <div style="margin-top: 20px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+        <p>更多应用即将上线</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 知识库模态框 -->
+  <div class="modal" id="knowledgeModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">我的知识库</div>
+        <button class="close-btn" id="closeKnowledgeModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="knowledge-manager">
+          <!-- 添加知识部分 -->
+          <div class="knowledge-section">
+            <div class="section-title">添加新知识</div>
+            <textarea class="knowledge-input" id="knowledgeInput" placeholder="输入你想让AI学习的内容..."></textarea>
+            <input type="text" class="knowledge-tags" id="knowledgeTags" placeholder="标签（用逗号分隔）">
+            <button class="add-knowledge-btn" id="addKnowledgeBtn">添加到知识库</button>
+          </div>
+          
+          <!-- 搜索知识部分 -->
+          <div class="knowledge-section">
+            <div class="section-title">搜索知识</div>
+            <input type="text" class="search-knowledge" id="searchKnowledge" placeholder="搜索知识库...">
+            <button class="add-knowledge-btn" id="searchKnowledgeBtn">搜索</button>
+          </div>
+          
+          <!-- 知识列表部分 -->
+          <div class="knowledge-section">
+            <div class="section-title">我的知识库</div>
+            <div class="knowledge-list" id="knowledgeList">
+              <!-- 知识条目将在这里动态生成 -->
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    // 🔑 配置你的API信息 - 请替换成你自己的！
-    const API_KEY = 'sk-cf810705e966476eb6aabf5651e42163'; // 请在此处填入你从阿里云百炼获取的API密钥
-    const API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'; // 千问的OpenAI兼容接口地址
-    const MODEL_NAME = 'qwen-max'; // 你打算使用的模型名称，例如 qwen-max, qwen-turbo 等
+    // 配置
+    const API_KEY = 'sk-cf810705e966476eb6aabf5651e42163';
+    const API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
+    const MODEL_NAME = 'qwen-max';
 
-    // 用于保存对话历史，让AI有上下文记忆
-    let conversationHistory = [
-      { 
-        role: "system", 
-        content: "你是一个名叫米小兜的AI助手，回答风格亲切友善、专业且简洁。你专注于帮助用户解决问题，提供有用的信息和建议。" 
-      }
-    ];
-
-    // 语音识别相关变量
+    // 状态管理
+    let conversationHistory = [];
+    let chatSessions = [];
+    let currentSessionId = null;
+    let isDeepThinking = false;
+    let isWebSearch = false;
     let recognition = null;
     let isListening = false;
     let lastAIResponse = "";
-    let isWeChat = false; // 标记是否在微信环境中
     
-    // 检测是否在微信中打开
-    function detectWeChat() {
-      const ua = navigator.userAgent.toLowerCase();
-      return ua.indexOf('micromessenger') !== -1;
+    // 知识库数据
+    let knowledgeBase = [];
+
+    // DOM 元素
+    const sidebar = document.getElementById('sidebar');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const newChatBtn = document.getElementById('newChatBtn');
+    const historyList = document.getElementById('historyList');
+    const chatContainer = document.getElementById('chatContainer');
+    const chatTitle = document.getElementById('chatTitle');
+    const userInput = document.getElementById('userInput');
+    const sendButton = document.getElementById('sendButton');
+    const voiceButton = document.getElementById('voiceButton');
+    const voiceStatus = document.getElementById('voiceStatus');
+    const deepThinkingBtn = document.getElementById('deepThinkingBtn');
+    const webSearchBtn = document.getElementById('webSearchBtn');
+    const knowledgeBaseBtn = document.getElementById('knowledgeBaseBtn');
+    const knowledgeModal = document.getElementById('knowledgeModal');
+    const closeKnowledgeModal = document.getElementById('closeKnowledgeModal');
+    const knowledgeInput = document.getElementById('knowledgeInput');
+    const knowledgeTags = document.getElementById('knowledgeTags');
+    const addKnowledgeBtn = document.getElementById('addKnowledgeBtn');
+    const searchKnowledge = document.getElementById('searchKnowledge');
+    const searchKnowledgeBtn = document.getElementById('searchKnowledgeBtn');
+    const knowledgeList = document.getElementById('knowledgeList');
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      loadChatSessions();
+      loadKnowledgeBase();
+      initializeVoiceRecognition();
+      setupEventListeners();
+      autoResizeTextarea();
+    });
+
+    // 设置事件监听器
+    function setupEventListeners() {
+      // 移动端菜单
+      mobileMenuBtn.addEventListener('click', toggleSidebar);
+      
+      // 新对话按钮
+      newChatBtn.addEventListener('click', createNewChat);
+      
+      // 发送消息
+      sendButton.addEventListener('click', sendMessage);
+      userInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+      
+      // 语音按钮
+      voiceButton.addEventListener('click', toggleVoiceRecognition);
+      
+      // 功能按钮
+      deepThinkingBtn.addEventListener('click', function() {
+        isDeepThinking = !isDeepThinking;
+        this.classList.toggle('active', isDeepThinking);
+      });
+      
+      webSearchBtn.addEventListener('click', function() {
+        isWebSearch = !isWebSearch;
+        this.classList.toggle('active', isWebSearch);
+      });
+      
+      // 知识库按钮
+      knowledgeBaseBtn.addEventListener('click', function() {
+        knowledgeModal.style.display = 'flex';
+      });
+      
+      // 关闭知识库模态框
+      closeKnowledgeModal.addEventListener('click', function() {
+        knowledgeModal.style.display = 'none';
+      });
+      
+      // 点击模态框外部关闭
+      knowledgeModal.addEventListener('click', function(e) {
+        if (e.target === knowledgeModal) {
+          knowledgeModal.style.display = 'none';
+        }
+      });
+      
+      // 添加知识
+      addKnowledgeBtn.addEventListener('click', addKnowledge);
+      
+      // 搜索知识
+      searchKnowledgeBtn.addEventListener('click', searchKnowledgeBase);
+      searchKnowledge.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          searchKnowledgeBase();
+        }
+      });
     }
-    
-    // 获取当前时间
-    function getCurrentTime() {
-      const now = new Date();
-      return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+    // 自动调整文本区域高度
+    function autoResizeTextarea() {
+      userInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+      });
     }
-    
-    // 检查浏览器是否支持语音识别
-    function initializeSpeechRecognition() {
+
+    // 切换侧边栏（移动端）
+    function toggleSidebar() {
+      sidebar.classList.toggle('open');
+    }
+
+    // 创建新对话
+    function createNewChat() {
+      const sessionId = 'chat_' + Date.now();
+      const session = {
+        id: sessionId,
+        title: '新对话',
+        createdAt: new Date().toISOString(),
+        messages: []
+      };
+      
+      chatSessions.push(session);
+      currentSessionId = sessionId;
+      conversationHistory = [];
+      
+      // 更新UI
+      chatContainer.innerHTML = '';
+      chatTitle.textContent = '新对话';
+      userInput.value = '';
+      
+      // 添加欢迎消息
+      addMessage('ai', '你好！我是米小兜，你的AI小伙伴，有什么可以帮助你的吗？');
+      
+      // 保存并更新历史列表
+      saveChatSessions();
+      renderHistoryList();
+      
+      // 在移动端关闭侧边栏
+      if (window.innerWidth <= 768) {
+        sidebar.classList.remove('open');
+      }
+    }
+
+    // 加载对话会话
+    function loadChatSessions() {
+      const saved = localStorage.getItem('chatSessions');
+      if (saved) {
+        chatSessions = JSON.parse(saved);
+        renderHistoryList();
+        
+        if (chatSessions.length > 0) {
+          // 加载最新会话
+          const latestSession = chatSessions[chatSessions.length - 1];
+          loadChatSession(latestSession.id);
+        } else {
+          createNewChat();
+        }
+      } else {
+        createNewChat();
+      }
+    }
+
+    // 保存对话会话
+    function saveChatSessions() {
+      localStorage.setItem('chatSessions', JSON.stringify(chatSessions));
+    }
+
+    // 渲染历史列表
+    function renderHistoryList() {
+      historyList.innerHTML = '';
+      
+      chatSessions.forEach(session => {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        if (session.id === currentSessionId) {
+          historyItem.classList.add('active');
+        }
+        
+        historyItem.textContent = session.title;
+        historyItem.addEventListener('click', () => {
+          loadChatSession(session.id);
+          if (window.innerWidth <= 768) {
+            sidebar.classList.remove('open');
+          }
+        });
+        
+        historyList.appendChild(historyItem);
+      });
+    }
+
+    // 加载特定对话会话
+    function loadChatSession(sessionId) {
+      const session = chatSessions.find(s => s.id === sessionId);
+      if (!session) return;
+      
+      currentSessionId = sessionId;
+      conversationHistory = [...session.messages];
+      chatTitle.textContent = session.title;
+      
+      // 清空并重新渲染聊天内容
+      chatContainer.innerHTML = '';
+      session.messages.forEach(msg => {
+        addMessage(msg.role === 'user' ? 'user' : 'ai', msg.content, false);
+      });
+      
+      // 更新历史列表高亮
+      renderHistoryList();
+      
+      // 滚动到底部
+      scrollToBottom();
+    }
+
+    // 添加消息到聊天界面
+    function addMessage(sender, content, saveToHistory = true) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message message-${sender}`;
+      
+      const avatarClass = sender === 'user' ? 'avatar-user' : 'avatar-ai';
+      const avatarIcon = sender === 'user' ? 'fas fa-user' : 'fas fa-child';
+      
+      messageDiv.innerHTML = `
+        <div class="message-content">
+          <div class="avatar ${avatarClass}">
+            <i class="${avatarIcon}"></i>
+          </div>
+          <div class="message-text">
+            <p>${content.replace(/\n/g, '<br>')}</p>
+            <div class="message-actions">
+              <button class="action-btn" onclick="copyToClipboard('${content.replace(/'/g, "\\'")}')">
+                <i class="far fa-copy"></i> 复制
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      chatContainer.appendChild(messageDiv);
+      
+      if (saveToHistory) {
+        // 保存到当前会话
+        const session = chatSessions.find(s => s.id === currentSessionId);
+        if (session) {
+          session.messages.push({
+            role: sender === 'user' ? 'user' : 'assistant',
+            content: content
+          });
+          
+          // 更新会话标题（使用第一条用户消息）
+          if (session.title === '新对话' && sender === 'user') {
+            session.title = content.length > 20 ? content.substring(0, 20) + '...' : content;
+            chatTitle.textContent = session.title;
+          }
+          
+          saveChatSessions();
+          renderHistoryList();
+        }
+      }
+      
+      scrollToBottom();
+    }
+
+    // 显示AI正在输入
+    function showTypingIndicator() {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message message-ai';
+      messageDiv.id = 'typing-indicator';
+      
+      messageDiv.innerHTML = `
+        <div class="message-content">
+          <div class="avatar avatar-ai">
+            <i class="fas fa-child"></i>
+          </div>
+          <div class="message-text">
+            <div class="typing-indicator">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      chatContainer.appendChild(messageDiv);
+      scrollToBottom();
+    }
+
+    // 移除输入指示器
+    function removeTypingIndicator() {
+      const indicator = document.getElementById('typing-indicator');
+      if (indicator) {
+        indicator.remove();
+      }
+    }
+
+    // 发送消息
+    async function sendMessage() {
+      const message = userInput.value.trim();
+      if (!message) return;
+      
+      // 添加用户消息
+      addMessage('user', message);
+      userInput.value = '';
+      userInput.style.height = 'auto';
+      
+      // 显示AI正在输入
+      showTypingIndicator();
+      
+      try {
+        // 构建对话历史
+        conversationHistory.push({ role: "user", content: message });
+        
+        // 添加系统提示（根据选项）
+        let systemMessage = "你是一个名叫米小兜的AI助手，回答风格亲切友善、专业且简洁。";
+        
+        if (isDeepThinking) {
+          systemMessage += "请提供深入、详细的分析和思考过程。";
+        }
+        
+        if (isWebSearch) {
+          systemMessage += "如果用户的问题需要最新信息，请说明这些信息可能不是最新的，并建议开启联网搜索功能。";
+        }
+        
+        // 从知识库中搜索相关内容
+        const relevantKnowledge = searchKnowledgeInBase(message);
+        if (relevantKnowledge.length > 0) {
+          systemMessage += "\n\n以下是用户的知识库内容，请参考这些信息回答问题：\n";
+          relevantKnowledge.forEach(item => {
+            systemMessage += `- ${item.content}\n`;
+          });
+        }
+        
+        const messages = [
+          { role: "system", content: systemMessage },
+          ...conversationHistory
+        ];
+        
+        // 调用API
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${API_KEY}`
+          },
+          body: JSON.stringify({
+            model: MODEL_NAME,
+            messages: messages,
+            temperature: isDeepThinking ? 0.7 : 0.5
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`API请求失败: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const aiReply = data.choices[0].message.content;
+        lastAIResponse = aiReply;
+        
+        // 移除输入指示器并添加AI回复
+        removeTypingIndicator();
+        addMessage('ai', aiReply);
+        
+        // 更新对话历史
+        conversationHistory.push({ role: "assistant", content: aiReply });
+        
+      } catch (error) {
+        console.error('出错了:', error);
+        removeTypingIndicator();
+        addMessage('ai', `抱歉，我暂时无法回应。错误详情: ${error.message}`);
+      }
+    }
+
+    // 复制到剪贴板
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        // 可以添加复制成功的提示
+      });
+    }
+
+    // 滚动到底部
+    function scrollToBottom() {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // 语音识别功能
+    function initializeVoiceRecognition() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       
       if (!SpeechRecognition) {
-        document.getElementById('voiceStatus').textContent = "您的浏览器不支持语音识别功能，请使用Chrome或Edge浏览器";
-        document.getElementById('voiceButton').disabled = true;
-        document.getElementById('voiceHelp').innerHTML = `
-          <strong>语音功能不可用</strong>
-          <p>您的浏览器不支持语音识别功能，请尝试以下解决方案：</p>
-          <ul>
-            <li>使用Chrome、Edge或Safari浏览器</li>
-            <li>确保浏览器版本较新</li>
-            <li>或直接使用文字输入与AI交流</li>
-          </ul>
-        `;
-        return false;
+        voiceButton.disabled = true;
+        voiceButton.title = "您的浏览器不支持语音识别";
+        return;
       }
       
       recognition = new SpeechRecognition();
@@ -458,23 +1246,21 @@
       
       recognition.onstart = function() {
         isListening = true;
-        document.getElementById('voiceButton').classList.add('listening');
-        document.getElementById('voiceStatus').textContent = "正在聆听...请说话";
+        voiceButton.classList.add('listening');
+        voiceStatus.textContent = "正在聆听...请说话";
       };
       
       recognition.onresult = function(event) {
         const transcript = event.results[0][0].transcript;
-        document.getElementById('userInput').value = transcript;
-        document.getElementById('voiceStatus').textContent = `识别结果: ${transcript}`;
+        userInput.value = transcript;
+        voiceStatus.textContent = `识别结果: ${transcript}`;
         
-        // 自动发送识别到的语音内容
-        setTimeout(() => {
-          sendMessage();
-        }, 500);
+        // 自动调整文本区域高度
+        userInput.style.height = 'auto';
+        userInput.style.height = (userInput.scrollHeight) + 'px';
       };
       
       recognition.onerror = function(event) {
-        console.error('语音识别错误:', event.error);
         let errorMessage = '语音识别错误: ';
         
         switch(event.error) {
@@ -495,28 +1281,19 @@
             errorMessage += event.error;
         }
         
-        document.getElementById('voiceStatus').textContent = errorMessage;
+        voiceStatus.textContent = errorMessage;
         stopVoiceRecognition();
-        
-        // 在微信中，提示用户授权麦克风
-        if (isWeChat && (event.error === 'not-allowed' || event.error === 'permission-denied')) {
-          document.getElementById('wechatTip').style.display = 'block';
-        }
       };
       
       recognition.onend = function() {
         stopVoiceRecognition();
       };
-      
-      return true;
     }
     
-    // 开始或停止语音识别
     function toggleVoiceRecognition() {
       if (!recognition) {
-        if (!initializeSpeechRecognition()) {
-          return;
-        }
+        voiceStatus.textContent = "语音识别未初始化";
+        return;
       }
       
       if (isListening) {
@@ -526,192 +1303,105 @@
       }
     }
     
-    // 开始语音识别
     function startVoiceRecognition() {
       try {
         recognition.start();
       } catch (error) {
         console.error('启动语音识别失败:', error);
-        document.getElementById('voiceStatus').textContent = "启动语音识别失败，请重试";
-        
-        // 在微信中，提示用户授权麦克风
-        if (isWeChat) {
-          document.getElementById('wechatTip').style.display = 'block';
-        }
+        voiceStatus.textContent = "启动语音识别失败，请重试";
       }
     }
     
-    // 停止语音识别
     function stopVoiceRecognition() {
       if (recognition && isListening) {
         recognition.stop();
       }
       isListening = false;
-      document.getElementById('voiceButton').classList.remove('listening');
+      voiceButton.classList.remove('listening');
     }
-    
-    // 语音合成 - 朗读AI的回复
-    function speakText(text) {
-      // 检查浏览器是否支持语音合成
-      if (!('speechSynthesis' in window)) {
-        alert("您的浏览器不支持语音合成功能");
+
+    // 知识库功能
+    function loadKnowledgeBase() {
+      const saved = localStorage.getItem('knowledgeBase');
+      if (saved) {
+        knowledgeBase = JSON.parse(saved);
+        renderKnowledgeList();
+      }
+    }
+
+    function saveKnowledgeBase() {
+      localStorage.setItem('knowledgeBase', JSON.stringify(knowledgeBase));
+    }
+
+    function addKnowledge() {
+      const content = knowledgeInput.value.trim();
+      const tags = knowledgeTags.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+      
+      if (!content) return;
+      
+      const knowledgeItem = {
+        id: Date.now(),
+        content: content,
+        tags: tags,
+        createdAt: new Date().toISOString()
+      };
+      
+      knowledgeBase.push(knowledgeItem);
+      saveKnowledgeBase();
+      renderKnowledgeList();
+      
+      // 清空输入
+      knowledgeInput.value = '';
+      knowledgeTags.value = '';
+    }
+
+    function searchKnowledgeBase() {
+      const query = searchKnowledge.value.trim().toLowerCase();
+      if (!query) {
+        renderKnowledgeList();
         return;
       }
       
-      // 停止任何正在进行的语音
-      window.speechSynthesis.cancel();
+      const filteredKnowledge = knowledgeBase.filter(item => {
+        const contentMatch = item.content.toLowerCase().includes(query);
+        const tagsMatch = item.tags.some(tag => tag.toLowerCase().includes(query));
+        return contentMatch || tagsMatch;
+      });
       
-      // 创建语音实例
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'zh-CN';
-      utterance.rate = 1.0; // 正常语速
-      utterance.pitch = 1.0; // 正常音调
-      
-      utterance.onstart = function() {
-        document.getElementById('voiceStatus').textContent = "正在朗读回复...";
-        document.getElementById('speakButton').disabled = true;
-      };
-      
-      utterance.onend = function() {
-        document.getElementById('voiceStatus').textContent = "";
-        document.getElementById('speakButton').disabled = false;
-      };
-      
-      utterance.onerror = function(event) {
-        console.error('语音合成错误:', event.error);
-        document.getElementById('voiceStatus').textContent = "语音朗读失败";
-        document.getElementById('speakButton').disabled = false;
-      };
-      
-      // 开始朗读
-      window.speechSynthesis.speak(utterance);
+      renderKnowledgeList(filteredKnowledge);
     }
-    
-    // 朗读最后一条AI消息
-    function speakLastMessage() {
-      if (lastAIResponse) {
-        speakText(lastAIResponse);
-      } else {
-        document.getElementById('voiceStatus').textContent = "没有可朗读的回复";
+
+    function searchKnowledgeInBase(query) {
+      const keywords = query.toLowerCase().split(' ');
+      return knowledgeBase.filter(item => {
+        const content = item.content.toLowerCase();
+        return keywords.some(keyword => content.includes(keyword));
+      }).slice(0, 3); // 返回最相关的3条
+    }
+
+    function renderKnowledgeList(knowledgeArray = knowledgeBase) {
+      knowledgeList.innerHTML = '';
+      
+      if (knowledgeArray.length === 0) {
+        knowledgeList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">暂无知识条目</p>';
+        return;
       }
-    }
-
-    // 发送消息函数 - 接入千问API
-    async function sendMessage() {
-      const userInput = document.getElementById('userInput');
-      const message = userInput.value.trim();
       
-      if (!message) return;
-
-      const chatBox = document.getElementById('chat');
-      const currentTime = getCurrentTime();
-      
-      // 在界面上显示用户输入
-      chatBox.innerHTML += `
-        <div class="message user-message">
-          ${message}
-          <div class="message-time">${currentTime}</div>
-        </div>
-      `;
-      userInput.value = '';
-      
-      // 显示"思考中"的提示
-      const thinkingId = "thinking-" + Date.now();
-      chatBox.innerHTML += `
-        <div class="message ai-message" id="${thinkingId}">
-          米小兜正在思考...
-          <div class="message-time">${currentTime}</div>
-        </div>
-      `;
-      chatBox.scrollTop = chatBox.scrollHeight;
-
-      try {
-        // 将用户的新消息加入历史
-        conversationHistory.push({ role: "user", content: message });
-
-        // 调用千问API
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${API_KEY}` // 认证信息
-          },
-          body: JSON.stringify({
-            model: MODEL_NAME,
-            messages: conversationHistory, // 发送完整的对话历史
-            temperature: 0.7 // 控制回答的随机性，0-1之间，越小越确定
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error(`网络请求错误: ${response.status}`);
-        }
-
-        const data = await response.json();
+      knowledgeArray.forEach(item => {
+        const knowledgeItem = document.createElement('div');
+        knowledgeItem.className = 'knowledge-item';
         
-        // 从API回复中提取AI的回答文本
-        const aiReply = data.choices[0].message.content;
-        lastAIResponse = aiReply; // 保存最后一条AI回复用于语音朗读
-        
-        // 将AI的回答也加入历史
-        conversationHistory.push({ role: "assistant", content: aiReply });
-
-        // 用AI的真实回复替换"思考中"提示
-        document.getElementById(thinkingId).outerHTML = `
-          <div class="message ai-message">
-            ${aiReply}
-            <div class="message-time">${getCurrentTime()}</div>
+        knowledgeItem.innerHTML = `
+          <div class="knowledge-content">${item.content}</div>
+          <div class="knowledge-meta">
+            <span>标签: ${item.tags.join(', ') || '无'}</span>
+            <span>${new Date(item.createdAt).toLocaleDateString()}</span>
           </div>
         `;
         
-        // 启用朗读按钮
-        document.getElementById('speakButton').disabled = false;
-        
-      } catch (error) {
-        console.error('出错了:', error);
-        // 用错误信息替换"思考中"提示
-        document.getElementById(thinkingId).outerHTML = `
-          <div class="message ai-message">
-            抱歉，我暂时无法回应。错误详情: ${error.message}
-            <div class="message-time">${getCurrentTime()}</div>
-          </div>
-        `;
-      }
-      
-      // 确保聊天框滚动到底部
-      chatBox.scrollTop = chatBox.scrollHeight;
+        knowledgeList.appendChild(knowledgeItem);
+      });
     }
-
-    // 支持按回车键发送消息
-    document.getElementById('userInput').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        sendMessage();
-      }
-    });
-
-    // 初始化
-    window.onload = function() {
-      // 检测是否在微信中
-      isWeChat = detectWeChat();
-      if (isWeChat) {
-        document.getElementById('wechatTip').style.display = 'block';
-      }
-      
-      // 初始化语音识别
-      initializeSpeechRecognition();
-      
-      const chat = document.getElementById('chat');
-      setTimeout(() => {
-        chat.innerHTML += `
-          <div class="message ai-message">
-            您可以使用文字或语音与我交流，点击麦克风按钮开始语音对话。
-            也可以通过上方的"打开学习应用"按钮访问我的其他功能。
-            <div class="message-time">${getCurrentTime()}</div>
-          </div>
-        `;
-        chat.scrollTop = chat.scrollHeight;
-      }, 1000);
-    };
   </script>
 </body>
 </html>
