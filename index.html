@@ -1171,10 +1171,10 @@
       });
       
       // 清空聊天记录按钮
-      document.getElementById('clearHistoryBtn').addEventListener('click', clearAllChatHistory);
+      document.getElementById('clearHistoryBtn')?.addEventListener('click', clearAllChatHistory);
       
       // 清空知识库按钮
-      document.getElementById('clearKnowledgeBaseBtn').addEventListener('click', clearKnowledgeBase);
+      document.getElementById('clearKnowledgeBaseBtn')?.addEventListener('click', clearKnowledgeBase);
     }
 
     // 自动调整文本区域高度
@@ -1247,87 +1247,85 @@
     }
 
     // 渲染历史列表
-   // 修改 renderHistoryList 函数
-function renderHistoryList() {
-  historyList.innerHTML = '';
-  
-  chatSessions.forEach(session => {
-    const historyItem = document.createElement('div');
-    historyItem.className = 'history-item';
-    if (session.id === currentSessionId) {
-      historyItem.classList.add('active');
-    }
-    
-    historyItem.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-        <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${session.title}</span>
-        <button class="delete-chat-btn" onclick="deleteChatSession('${session.id}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 4px; margin-left: 8px;">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-    `;
-    
-    historyItem.addEventListener('click', (e) => {
-      // 防止点击删除按钮时触发切换会话
-      if (!e.target.closest('.delete-chat-btn')) {
-        loadChatSession(session.id);
-        if (window.innerWidth <= 768) {
-          sidebar.classList.remove('open');
+    function renderHistoryList() {
+      historyList.innerHTML = '';
+      
+      chatSessions.forEach(session => {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        if (session.id === currentSessionId) {
+          historyItem.classList.add('active');
         }
-      }
-    });
-    
-    historyList.appendChild(historyItem);
-  });
-}
-    
-    // 加载特定对话会话
-    // 加载特定对话会话
-function loadChatSession(sessionId) {
-  const session = chatSessions.find(s => s.id === sessionId);
-  if (!session) return;
-  
-  currentSessionId = sessionId;
-  conversationHistory = [...session.messages];
-  chatTitle.textContent = session.title;
-  
-  // 清空并重新渲染聊天内容
-  chatContainer.innerHTML = '';
-  session.messages.forEach(msg => {
-    addMessage(msg.role === 'user' ? 'user' : 'ai', msg.content, false);
-  });
-  
-  // 更新历史列表高亮
-  renderHistoryList();
-  
-  // 滚动到底部
-  scrollToBottom();
-}
-
-// 删除单个对话会话
-function deleteChatSession(sessionId) {
-  if (confirm('确定要删除这个对话吗？此操作不可恢复！')) {
-    // 从会话列表中移除
-    chatSessions = chatSessions.filter(session => session.id !== sessionId);
-    
-    // 如果删除的是当前会话，需要切换到其他会话或创建新会话
-    if (currentSessionId === sessionId) {
-      if (chatSessions.length > 0) {
-        // 切换到第一个会话
-        loadChatSession(chatSessions[0].id);
-      } else {
-        // 没有其他会话，创建新会话
-        createNewChat();
-      }
+        
+        historyItem.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${session.title}</span>
+            <button class="delete-chat-btn" onclick="deleteChatSession('${session.id}')" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 4px; margin-left: 8px;">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        `;
+        
+        historyItem.addEventListener('click', (e) => {
+          // 防止点击删除按钮时触发切换会话
+          if (!e.target.closest('.delete-chat-btn')) {
+            loadChatSession(session.id);
+            if (window.innerWidth <= 768) {
+              sidebar.classList.remove('open');
+            }
+          }
+        });
+        
+        historyList.appendChild(historyItem);
+      });
     }
     
-    // 保存更改
-    saveChatSessions();
-    renderHistoryList();
-    
-    alert('对话已删除！');
-  }
-}
+    // 加载特定对话会话
+    function loadChatSession(sessionId) {
+      const session = chatSessions.find(s => s.id === sessionId);
+      if (!session) return;
+      
+      currentSessionId = sessionId;
+      conversationHistory = [...session.messages];
+      chatTitle.textContent = session.title;
+      
+      // 清空并重新渲染聊天内容
+      chatContainer.innerHTML = '';
+      session.messages.forEach(msg => {
+        addMessage(msg.role === 'user' ? 'user' : 'ai', msg.content, false);
+      });
+      
+      // 更新历史列表高亮
+      renderHistoryList();
+      
+      // 滚动到底部
+      scrollToBottom();
+    }
+
+    // 删除单个对话会话
+    function deleteChatSession(sessionId) {
+      if (confirm('确定要删除这个对话吗？此操作不可恢复！')) {
+        // 从会话列表中移除
+        chatSessions = chatSessions.filter(session => session.id !== sessionId);
+        
+        // 如果删除的是当前会话，需要切换到其他会话或创建新会话
+        if (currentSessionId === sessionId) {
+          if (chatSessions.length > 0) {
+            // 切换到第一个会话
+            loadChatSession(chatSessions[0].id);
+          } else {
+            // 没有其他会话，创建新会话
+            createNewChat();
+          }
+        }
+        
+        // 保存更改
+        saveChatSessions();
+        renderHistoryList();
+        
+        alert('对话已删除！');
+      }
+    }
 
     // 添加消息到聊天界面
     function addMessage(sender, content, saveToHistory = true) {
@@ -1786,11 +1784,32 @@ function deleteChatSession(sessionId) {
       const achievements = document.getElementById('workAchievements').value.trim();
       const skills = document.getElementById('workSkills').value.split(',').map(skill => skill.trim()).filter(skill => skill);
       
-      if (!taskName || !projectName || !startDate || !description) {
-        alert('请填写必填字段：任务名称、项目名称、开始日期和工作描述');
+      // 改进验证逻辑
+      if (!taskName) {
+        alert('请填写任务名称');
+        document.getElementById('workTaskName').focus();
         return;
       }
       
+      if (!projectName) {
+        alert('请填写项目名称');
+        document.getElementById('workProjectName').focus();
+        return;
+      }
+      
+      if (!startDate) {
+        alert('请选择开始日期');
+        document.getElementById('workStartDate').focus();
+        return;
+      }
+      
+      if (!description) {
+        alert('请填写工作内容描述');
+        document.getElementById('workDescription').focus();
+        return;
+      }
+      
+      // 创建新的工作记录
       const workRecord = {
         id: Date.now(),
         taskName: taskName,
@@ -1803,16 +1822,15 @@ function deleteChatSession(sessionId) {
         createdAt: new Date().toISOString()
       };
       
+      // 添加到工作记录列表
       workRecords.push(workRecord);
       saveWorkRecords();
       renderWorkRecordList();
       
-      // 同时将工作记录添加到知识库，便于AI检索
-      const knowledgeContent = `【工作记录】\n任务：${taskName}\n项目：${projectName}\n时间：${startDate} 至 ${endDate || startDate}\n工作内容：${description}\n${achievements ? `成果亮点：${achievements}\n` : ''}技能标签：${skills.join(', ')}`;
-      
+      // 同时添加到知识库
       const knowledgeItem = {
         id: 'work_' + workRecord.id,
-        content: knowledgeContent,
+        content: `工作记录：${taskName} - ${projectName}\n工作内容：${description}\n${achievements ? '成果亮点：' + achievements : ''}\n技能标签：${skills.join(', ')}`,
         tags: ['工作记录', projectName, ...skills],
         createdAt: new Date().toISOString()
       };
@@ -1829,6 +1847,8 @@ function deleteChatSession(sessionId) {
       document.getElementById('workDescription').value = '';
       document.getElementById('workAchievements').value = '';
       document.getElementById('workSkills').value = '';
+      
+      alert('工作记录添加成功！');
     }
 
     function renderWorkRecordList() {
