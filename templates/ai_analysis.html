@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InfoRecon - AI 分析报告</title>
+<link rel="stylesheet" href="/static/style.css">
+<style>
+.report-header { background: linear-gradient(135deg, #1a2332, #0f1923); border: 1px solid #2a3a4a; border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+.report-header h2 { font-size: 18px; color: #60a5fa; margin-bottom: 4px; }
+.report-header .meta { color: #6b7280; font-size: 12px; }
+.verdict-card { background: #111827; border: 1px solid #1f2937; border-radius: 10px; padding: 20px; margin-bottom: 16px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+.verdict-direction { font-size: 28px; font-weight: 700; padding: 8px 16px; border-radius: 8px; }
+.dir-up { background: #1a5c38; color: #34d399; }
+.dir-down { background: #5c1a1a; color: #ef4444; }
+.dir-sideways { background: #5c4a1a; color: #fbbf24; }
+.verdict-detail { flex: 1; }
+.verdict-detail .logic { font-size: 14px; color: #d1d5db; margin: 4px 0; }
+.verdict-detail .risk { font-size: 12px; color: #ef4444; }
+.confidence-bar { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.conf-bar-bg { width: 120px; height: 6px; background: #1f2937; border-radius: 3px; overflow: hidden; }
+.conf-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.conf-text { font-size: 13px; color: #9ca3af; }
+.section-card { background: #111827; border: 1px solid #1f2937; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+.section-card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.section-card ul { list-style: none; padding: 0; }
+.section-card li { font-size: 13px; color: #d1d5db; padding: 6px 0; border-bottom: 1px solid #1a1a2e; line-height: 1.5; }
+.section-card li:last-child { border: none; }
+.arrow { margin: 0 4px; }
+.target-price { font-size: 20px; font-weight: 700; color: #fbbf24; }
+</style>
+</head>
+<body>
+<div class="container">
+  <nav><a href="/" class="logo">InfoRecon</a><a href="/predictions">← 返回预测</a></nav>
+
+  <div class="report-header">
+    <h2>🤖 AI 分析报告</h2>
+    <div class="meta">{{ target }} · {{ timeframe }} · {{ category }}</div>
+  </div>
+
+  <div class="verdict-card">
+    <div class="verdict-direction dir-{{ ai_class }}">
+      {% if direction == "上涨" %}↑{% elif direction == "下跌" %}↓{% else %}→{% endif %}
+      {{ direction }}
+    </div>
+    <div class="verdict-detail">
+      <div class="logic">{{ logic }}</div>
+      {% if risk %}
+      <div class="risk">⚠ 关键风险：{{ risk }}</div>
+      {% endif %}
+      {% if target_price %}
+      <div class="target-price" style="margin-top:6px">目标价位：{{ target_price }}</div>
+      {% endif %}
+      <div class="confidence-bar">
+        <span class="conf-text">信心指数</span>
+        <div class="conf-bar-bg">
+          <div class="conf-bar-fill" style="width:{{ confidence*10 }}%;background:{% if confidence>=7 %}#34d399{% elif confidence>=4 %}#fbbf24{% else %}#ef4444{% endif %}"></div>
+        </div>
+        <span class="conf-text">{{ confidence }}/10</span>
+      </div>
+    </div>
+  </div>
+
+  {% for section_name, items in sections.items() %}
+  {% if section_name != "最终输出" %}
+  <div class="section-card">
+    <h3>{{ icon_for(section_name) }} {{ section_name }}</h3>
+    <ul>
+      {% for item in items %}
+      <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  {% endfor %}
+
+  <div style="text-align:center;margin-top:20px">
+    <a href="/predictions" class="btn-collect" style="display:inline-block;text-decoration:none">← 返回预测页面</a>
+  </div>
+</div>
+</body>
+</html>
