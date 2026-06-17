@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html><html lang="zh-CN">
+<!DOCTYPE html><html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>InfoRecon - 预测</title><link rel="stylesheet" href="/static/style.css"></head>
 <body><div class="container">
 <nav><a href="/" class="logo">InfoRecon</a><a href="/predictions">预测</a><a href="/events">事件</a><a href="/rules">规则引擎</a><a href="/trades">交易</a></nav>
@@ -30,13 +30,11 @@
 <div class="section"><h2>🤖 AI 分析</h2>
 <form method="get" action="/predictions/analyze" class="pred-form" target="_blank">
 <div class="form-row"><label>分析标的</label><input name="target" size="30" placeholder="如：三安光电（600703）" required></div>
-<div class="form-row"><label>方向</label>
-<select name="direction"><option value="上涨">上涨</option><option value="下跌">下跌</option><option value="横盘">横盘</option></select></div>
-<div class="form-row"><label>时间</label>
+<div class="form-row"><label>时间框架</label>
 <select name="timeframe"><option value="1周">1周</option><option value="2周" selected>2周</option><option value="1月">1月</option></select></div>
 <div class="form-row"><button type="submit">🔍 启动AI分析</button></div>
 </form>
-<p class="muted">提交后将在新页面查看 DeepSeek 的结构化分析报告</p>
+<p class="muted">AI 将独立搜索信息并判断方向，不受预设影响</p>
 </div>
 
 <div class="section"><h2>所有预测</h2>
