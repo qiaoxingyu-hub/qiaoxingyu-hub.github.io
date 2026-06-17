@@ -35,28 +35,6 @@
 <div class="form-row"><button type="submit">🔍 启动AI分析</button></div>
 </form>
 <p class="muted">AI 将独立搜索信息并判断方向，不受预设影响</p>
-</div>
-
-<div class="section"><h2>所有预测</h2>
-<div class="pred-table"><table><tr><th>时间</th><th>类别</th><th>主题</th><th>方向</th><th>目标</th><th>信心</th><th>状态</th><th>校准</th></tr>
-{% for p in predictions %}
-<tr>
-<td>{{ p.created_at[:10] }}</td>
-<td>{{ cn.get(p.category, p.category) }}</td>
-<td>{{ p.subject[:25] }}</td>
-<td class="dir-{{ p.direction }}">{{ cn.get(p.direction, p.direction) }}</td>
-<td>{{ p.target_value }}</td>
-<td>{{ p.confidence }}/10</td>
-<td class="status-{{ p.status }}">{{ cn.get(p.status, p.status) }}</td>
-<td>
-{% if p.status=="pending" %}
-<form method="post" action="/predictions/resolve/{{ p.id }}" class="inline-form">
-<select name="status"><option value="correct">正确</option><option value="wrong">错误</option><option value="inconclusive">不确定</option></select>
-<input name="actual_outcome" placeholder="实际结果" size="12">
-<button type="submit">校准</button>
-</form>
-{% endif %}
-</td></tr>
-{% endfor %}</table></div></div></div>
+</div></div>
 <script>document.querySelector('[name=confidence]')?.addEventListener('input',function(){document.getElementById('cv').textContent=this.value+'/10';});</script>
 </body></html>
