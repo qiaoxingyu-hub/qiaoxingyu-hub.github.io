@@ -1,4 +1,4 @@
-﻿"""InfoRecon v2 - 完整重构版"""
+"""InfoRecon v2 - 完整重构版"""
 import sys, os, json
 from pathlib import Path
 sys.path.insert(0, os.path.dirname(__file__))
