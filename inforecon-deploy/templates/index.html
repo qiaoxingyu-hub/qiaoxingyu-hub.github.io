@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html><html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>InfoRecon</title>
+<link rel="stylesheet" href="/static/style.css"></head>
+<body><div class="container">
+<nav><a href="/" class="logo">InfoRecon v2</a><a href="/predictions">预测</a><a href="/events">事件</a><a href="/rules">规则引擎</a><a href="/trades">交易</a><a href="/collect" class="btn-collect">运行采集</a></nav>
+<div class="stats-row">
+<div class="stat-card"><span class="num">{% if stats.accuracy %}{{ stats.accuracy }}%{% else %}--{% endif %}</span><span class="label">准确率</span></div>
+<div class="stat-card"><span class="num">{{ stats.correct }}/{{ stats.total }}</span><span class="label">已结案</span></div>
+<div class="stat-card"><span class="num">{{ pending_predictions|length }}</span><span class="label">待校验</span></div>
+</div>
+<div class="section"><h2>关键指标</h2>
+<div class="indicators-grid">
+{% for ind in indicators %}
+<div class="ind-card"><div class="ind-cat">{{ ind.category }}</div><div class="ind-name">{{ ind.name }}</div>
+<div class="ind-value">{{ '%.2f'|format(ind.value) }} <span class="ind-unit">{{ ind.unit }}</span></div>
+<div class="ind-source">{{ ind.source }} {{ ind.timestamp[:10] }}</div></div>
+{% endfor %}
+{% if not indicators %}<p class="muted">暂无数据，请先 <a href="/collect">运行采集</a></p>{% endif %}
+</div></div>
+<div class="section"><h2>最新事件</h2>
+<div class="events-list">
+{% for ev in events %}
+<div class="event-item">
+<span class="ev-date">{{ ev.date[:10] }}</span>
+<span class="ev-cat tag-{{ ev.category }}">{{ ev.category }}</span>
+{% if ev.ticker %}<span class="ev-ticker">{{ ev.ticker }}</span>{% endif %}
+<span class="ev-title">{{ ev.title[:50] }}</span>
+{% if ev.sentiment %}<span class="sentiment-{{ ev.sentiment }}">{{ ev.sentiment }}</span>{% endif %}
+</div>
+{% endfor %}
+{% if not events %}<p class="muted">暂无事件</p>{% endif %}
+</div></div>
+<div class="section"><h2>待校验预测</h2>
+<div class="pred-list">
+{% for p in pending_predictions %}
+<div class="pred-item">
+<span class="pred-dir {{ p.direction }}">{{ p.direction }}</span>
+<span>{{ p.subject[:30] }}</span>
+<span class="pred-conf">{{ p.confidence }}/10</span>
+<span class="pred-ts">{{ p.created_at[:10] }}</span>
+</div>
+{% endfor %}
+{% if not pending_predictions %}<p class="muted">暂无待校验预测</p>{% endif %}
+</div></div>
+</div></body></html>
