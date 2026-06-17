@@ -1,4 +1,4 @@
-﻿"""InfoRecon v2 - 完整重构版"""
+"""InfoRecon v2 - 完整重构版"""
 import sys, os, json
 from pathlib import Path
 sys.path.insert(0, os.path.dirname(__file__))
@@ -130,9 +130,31 @@ async def analyze_prediction(category:str=Form(...),subject:str=Form(...),direct
     return result
 
 @app.get("/predictions/analyze")
-async def analyze_prediction_get(target:str="",direction:str="上涨",timeframe:str="1周",category:str="stock"):
-    result = ai_analyze(target, direction, timeframe, category)
-    return result
+async def analyze_prediction_get(request:Request,target:str="",timeframe:str="2周",category:str="stock"):
+    result = ai_analyze(target, timeframe, category)
+    
+    def icon_for(name):
+        icons = {"第1层":"🌍","第2层":"🏭","第3层":"📈","宏观":"🌍","行业":"🏭","个股":"📈","关键":"📌"}
+        for k,v in icons.items():
+            if k in name: return v
+        return "📋"
+    
+    sections = result.get("sections", {})
+    ai_class = "up" if result.get("direction","不确定") in ["上涨","涨"] else ("down" if result.get("direction","") in ["下跌","跌"] else "sideways")
+    
+    return render("ai_analysis.html",
+        target=target,
+        timeframe=timeframe,
+        category=category,
+        direction=result.get("direction","不确定"),
+        confidence=result.get("confidence",5),
+        logic=result.get("logic",""),
+        risk=result.get("risk",""),
+        target_price=result.get("target_price",""),
+        sections=sections,
+        ai_class=ai_class,
+        icon_for=icon_for
+    )
 
 
 if __name__ == "__main__":
